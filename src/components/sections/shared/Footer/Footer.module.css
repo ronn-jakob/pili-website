@@ -1,0 +1,159 @@
+.footer {
+  background-color: var(--color-background);
+}
+
+/* The rule sits at the top of the frame's footer band (y2566). */
+.top {
+  border-top: 1px solid var(--color-footer-rule);
+  padding-top: 34px;
+  padding-bottom: 39px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+}
+
+.heading {
+  font-size: var(--font-size-body-sm);
+  font-weight: var(--font-weight-normal);
+  line-height: 1.21;
+  color: var(--color-text-strong);
+}
+
+.contactList {
+  display: flex;
+  flex-direction: column;
+  gap: 18.5px;
+  margin-top: 26px;
+  font-style: normal;
+  font-size: var(--font-size-sm);
+  line-height: 1.21;
+  color: var(--color-footer-text);
+}
+
+.contactList a {
+  width: fit-content;
+  transition: color var(--transition-fast);
+}
+
+.contactList a:hover,
+.contactList a:focus-visible {
+  color: var(--color-text-strong);
+  text-decoration: underline;
+  text-underline-position: from-font;
+}
+
+.contactList a:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+.payments {
+  display: grid;
+  grid-template-columns: repeat(2, 44px);
+  gap: 10px 11px;
+  margin-top: 15px;
+}
+
+.payment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 23px;
+  border: 1px solid var(--color-payment-border);
+  border-radius: var(--radius-xs);
+}
+
+.bottom {
+  border-top: 1px solid var(--color-footer-rule);
+  padding-top: 36px;
+  padding-bottom: 33px;
+}
+
+.bottomRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+}
+
+.copyright {
+  font-size: var(--font-size-caption);
+  line-height: 1.21;
+  color: var(--color-footer-copyright);
+}
+
+.bottomRight {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.adminLink {
+  font-size: var(--font-size-caption);
+  line-height: 1.21;
+  color: var(--color-footer-copyright);
+  transition: color var(--transition-fast);
+}
+
+.adminLink:hover {
+  color: var(--color-text-strong);
+  text-decoration: underline;
+  text-underline-position: from-font;
+}
+
+.adminLink:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+.socials {
+  display: flex;
+  align-items: center;
+  gap: 14.5px;
+}
+
+.socialLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 19.1111px;
+  height: 19.1111px;
+  transition: opacity var(--transition-fast);
+}
+
+.socialLink:hover {
+  opacity: 0.6;
+}
+
+.socialLink:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+
+/* Tablet and up — the frame's 381px column offset. */
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: 381px minmax(0, 1fr);
+    gap: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .bottomRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .bottomRight {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

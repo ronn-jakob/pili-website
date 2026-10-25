@@ -1,0 +1,142 @@
+.card {
+  overflow: hidden;
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--admin-font);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
+  color: var(--admin-ink);
+}
+
+.subtitle {
+  margin: 2px 0 0;
+  font-family: var(--admin-font);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--admin-muted);
+}
+
+.viewAll {
+  height: 30px;
+  padding: 0 17px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background-color: #ffffff;
+  font-family: var(--admin-font);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--admin-blue);
+  cursor: pointer;
+  transition: background-color 140ms ease, border-color 140ms ease;
+}
+
+.viewAll:hover {
+  border-color: var(--admin-blue);
+  background-color: var(--admin-blue-soft);
+}
+
+.viewAll:focus-visible {
+  outline: 2px solid var(--admin-blue);
+  outline-offset: 2px;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+  font-family: var(--admin-font);
+  font-size: 12px;
+  color: var(--admin-text);
+}
+
+.table th {
+  height: 46px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--admin-border);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--admin-faint);
+}
+
+.table td {
+  height: 57px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--admin-border);
+  white-space: nowrap;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr:hover {
+  background-color: #fafcff;
+}
+
+.bookingId {
+  font-weight: 600;
+  color: var(--admin-blue);
+}
+
+.amount {
+  font-weight: 600;
+  color: var(--admin-ink);
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 78px;
+  height: 24px;
+  padding: 0 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.confirmed {
+  background-color: #d1fae5;
+  color: #047857;
+}
+
+.pending {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.cancelled {
+  background-color: #ffe4e6;
+  color: #be123c;
+}
+
+@media (max-width: 639px) {
+  .header {
+    padding: 20px;
+  }
+}

@@ -1,0 +1,37 @@
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filter {
+  height: 34px;
+  padding: 0 18px;
+  border: 1px solid var(--color-page-border);
+  border-radius: 18px;
+  background-color: var(--color-page-surface);
+  font-family: var(--font-family-heading);
+  font-size: 13px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-page-ink);
+  cursor: pointer;
+  transition: background-color var(--transition-fast),
+    border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.filter:hover {
+  border-color: var(--color-page-link);
+  color: var(--color-page-link);
+}
+
+.active,
+.active:hover {
+  border-color: var(--color-page-link);
+  background-color: var(--color-page-link);
+  color: #ffffff;
+}
+
+.filter:focus-visible {
+  outline: 2px solid var(--color-page-link);
+  outline-offset: 2px;
+}

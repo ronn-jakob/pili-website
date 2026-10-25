@@ -1,0 +1,55 @@
+/* The control is centred on the content column's right edge in the design, so
+ * the section supplies `right` (typically -26.8px) and `top` via className. */
+.button {
+  display: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-arrow-border);
+  border-radius: var(--radius-full);
+  background-color: var(--color-header-bg);
+  color: var(--color-arrow-icon);
+  cursor: pointer;
+  transition: background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.button:hover {
+  background-color: var(--color-primary);
+  color: var(--color-header-bg);
+}
+
+.button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.button:disabled:hover {
+  background-color: var(--color-header-bg);
+  color: var(--color-arrow-icon);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Figma's "next" arrow points right; the source glyph points left. */
+.icon {
+  transform: rotate(180deg);
+}
+
+.iconPrev {
+  transform: rotate(0deg);
+}
+
+@media (min-width: 1024px) {
+  .button {
+    display: inline-flex;
+  }
+}

@@ -1,0 +1,33 @@
+.page {
+  padding: 32px 0 80px;
+  background-color: var(--color-booking-bg);
+}
+
+.inner {
+  max-width: 1252px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  gap: 40px;
+  align-items: start;
+}
+
+.left {
+  min-width: 0;
+}
+
+@media (max-width: 1199px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .page {
+    padding: 24px 0 56px;
+  }
+}

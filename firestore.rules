@@ -1,0 +1,162 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isOperator() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/operators/$(request.auth.uid));
+    }
+
+    function destinationIsActive(destinationId) {
+      return exists(/databases/$(database)/documents/destinations/$(destinationId))
+        && get(/databases/$(database)/documents/destinations/$(destinationId)).data.status == 'active';
+    }
+
+    function tourIsPublishedAndActive(tourId) {
+      return exists(/databases/$(database)/documents/tours/$(tourId))
+        && get(/databases/$(database)/documents/tours/$(tourId)).data.status == 'published'
+        && destinationIsActive(get(/databases/$(database)/documents/tours/$(tourId)).data.destinationId);
+    }
+
+    function tourIsOwnedPublishedAndActive(tourId) {
+      return exists(/databases/$(database)/documents/tours/$(tourId))
+        && get(/databases/$(database)/documents/tours/$(tourId)).data.operatorId == request.auth.uid
+        && get(/databases/$(database)/documents/tours/$(tourId)).data.status == 'published'
+        && destinationIsActive(get(/databases/$(database)/documents/tours/$(tourId)).data.destinationId);
+    }
+
+    function ownsTour() {
+      return isOperator() && resource.data.operatorId == request.auth.uid;
+    }
+
+    function canEditTourContent() {
+      return resource.data.status in ['draft', 'rejected', 'published', 'hidden'];
+    }
+
+    function nextTourStatusIsValid() {
+      return request.resource.data.status in ['draft', 'pending_review'];
+    }
+
+    match /admins/{userId} {
+      allow read: if isSignedIn() && request.auth.uid == userId;
+      allow write: if false;
+    }
+
+    match /operators/{userId} {
+      allow read: if isSignedIn() && request.auth.uid == userId;
+      allow write: if false;
+    }
+
+    match /destinations/{destinationId} {
+      allow read: if resource.data.status == 'active' || isAdmin() || isOperator();
+      allow create, update: if isAdmin();
+      allow delete: if false;
+    }
+
+    match /categories/{categoryId} {
+      allow read: if resource.data.status == 'active' || isAdmin() || isOperator();
+      allow create, update: if isAdmin();
+      allow delete: if false;
+    }
+
+    match /tours/{tourId} {
+      allow read: if (resource.data.status == 'published'
+          && destinationIsActive(resource.data.destinationId))
+        || isAdmin()
+        || ownsTour();
+
+      allow create: if isOperator()
+        && request.resource.data.operatorId == request.auth.uid
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.status in ['draft', 'pending_review']
+        && destinationIsActive(request.resource.data.destinationId)
+        && request.resource.data.publishedAt == null
+        && request.resource.data.reviewedBy == null
+        && request.resource.data.reviewedAt == null
+        && request.resource.data.ratingAvg == 0
+        && request.resource.data.reviewCount == 0;
+
+      allow update: if ownsTour()
+        && request.resource.data.operatorId == resource.data.operatorId
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && canEditTourContent()
+        && nextTourStatusIsValid()
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'operatorId',
+          'slug',
+          'ratingAvg',
+          'reviewCount',
+          'reviewedBy',
+          'reviewedAt',
+          'publishedAt',
+          'createdAt'
+        ])
+        && destinationIsActive(request.resource.data.destinationId)
+        && (!(resource.data.status in ['published', 'hidden'])
+          || request.resource.data.status == 'pending_review');
+
+      allow update: if isAdmin()
+        && request.resource.data.status in [
+          'published',
+          'rejected',
+          'hidden',
+          'archived'
+        ]
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status',
+          'reviewedBy',
+          'reviewedAt',
+          'rejectionReason',
+          'publishedAt',
+          'updatedAt'
+        ]);
+
+      allow delete: if ownsTour() && resource.data.status == 'draft';
+    }
+
+    match /departures/{departureId} {
+      allow read: if isAdmin()
+        || (isOperator() && resource.data.operatorId == request.auth.uid)
+        || tourIsPublishedAndActive(resource.data.tourId);
+
+      allow create: if isOperator()
+        && request.resource.data.operatorId == request.auth.uid
+        && request.resource.data.status == 'scheduled'
+        && request.resource.data.bookedTravelers == 0
+        && request.resource.data.lastBookingId == null
+        && request.resource.data.capacity is number
+        && request.resource.data.capacity > 0
+        && request.resource.data.startAt is timestamp
+        && request.resource.data.cutoffAt is timestamp
+        && tourIsOwnedPublishedAndActive(request.resource.data.tourId);
+
+      allow update: if isOperator()
+        && resource.data.operatorId == request.auth.uid
+        && resource.data.status in ['scheduled', 'full']
+        && request.resource.data.operatorId == resource.data.operatorId
+        && request.resource.data.tourId == resource.data.tourId
+        && request.resource.data.bookedTravelers == resource.data.bookedTravelers
+        && request.resource.data.lastBookingId == resource.data.lastBookingId
+        && request.resource.data.capacity is number
+        && request.resource.data.capacity >= resource.data.bookedTravelers
+        && request.resource.data.status in ['scheduled', 'full', 'cancelled'];
+
+      allow delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,247 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Kaushan+Script&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* Colors */
+  --color-primary: #2760ee;
+  --color-primary-dark: #1e4cc4;
+  --color-primary-light: #e8f0ff;
+  --color-primary-soft: #6384d3;
+
+  --color-text-strong: #010101;
+  --color-text-primary: #111827;
+  --color-text-secondary: #4b5563;
+  --color-text-muted: #9ca3af;
+
+  --color-background: #ffffff;
+  --color-surface: #f8fafc;
+  --color-border: #e2e8f0;
+
+  /* Header */
+  --color-header-bg: #fafafa;
+  --color-header-border: #c3c3c3;
+  --color-header-divider: #9c9c9c;
+
+  /* Hero */
+  --color-hero-overlay: rgba(1, 0, 0, 0.15);
+  --color-hero-field: rgba(250, 250, 250, 0.98);
+  --color-hero-placeholder: rgba(0, 0, 0, 0.58);
+
+  /* Cards */
+  --color-card-placeholder: #d9d9d9;
+  --color-card-border: rgba(102, 98, 98, 0.49);
+  --color-card-category: rgba(0, 0, 0, 0.76);
+  --color-card-booked: #797979;
+  --color-arrow-icon: #797979;
+  --color-arrow-border: #c0c0c0;
+
+  /* Popular places card badges */
+  --color-rating-border: #ffcc4c;
+  --color-rating-fill: rgba(255, 204, 76, 0.09);
+  --color-rating-star: #ffcc4c;
+  --color-rating-value: #f5af00;
+  --color-offer-border: #ff0027;
+  --color-offer-text: #ff001a;
+  --color-wishlist-active: #ff0027;
+
+  --color-success: #10b981;
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
+
+  /* Why Choose Pili */
+  --color-accent-red: #ff0027;
+  --color-accent-blue: #195cff;
+  --color-accent-yellow: #f5af00;
+
+  /* Footer */
+  --color-footer-rule: rgba(0, 0, 0, 0.28);
+  --color-footer-text: rgba(0, 0, 0, 0.5);
+  --color-footer-copyright: rgba(0, 0, 0, 0.49);
+  --color-payment-border: rgba(0, 0, 0, 0.5);
+
+  /* Login modal */
+  --color-modal-overlay: rgba(0, 0, 0, 0.6);
+  --color-modal-button: #195cff;
+
+  /* Destination page */
+  --color-page-ink: #1f242e;
+  --color-page-muted: #737a85;
+  --color-page-coral: #eb5966;
+  --color-page-surface: #f7f9fa;
+  --color-page-border: #e5e8ed;
+  --color-page-link: #1a66e5;
+  --color-page-hero-eyebrow: #e5d9bf;
+  --color-page-hero-text: #e5ebf2;
+  --color-page-hero-overlay: rgba(13, 26, 46, 0.45);
+
+  /* Packages page */
+  --color-package-ink: #1a1a1a;
+  --color-package-muted: #737373;
+  --color-package-blue: #1f40b0;
+  --color-package-link: #1a66e5;
+  --color-package-star: #e58c1a;
+  --color-package-border: #c6c6c6;
+
+  /* Admin */
+  --admin-bg: #f8fafc;
+  --admin-surface: #ffffff;
+  --admin-border: #f1f5f9;
+  --admin-border-strong: #e2e8f0;
+  --admin-ink: #0f172a;
+  --admin-text: #475569;
+  --admin-muted: #64748b;
+  --admin-faint: #94a3b8;
+  --admin-blue: #2563eb;
+  --admin-blue-soft: #eff6ff;
+  --admin-navy: #0f2c59;
+  --admin-green: #059669;
+  --admin-amber: #d97706;
+  --admin-red: #e11d48;
+
+  /* Tour details page */
+  --color-detail-muted: #787878;
+  --color-detail-surface: #f9f9f9;
+  --color-detail-border: #c3c3c3;
+  --color-detail-success: #339933;
+
+  /* Booking page */
+  --color-booking-bg: #f5f7fa;
+  --color-booking-field: #f7fafc;
+  --color-booking-success: #1f9966;
+  --color-booking-badge: #ebf2ff;
+
+  /* Typography */
+  --font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-heading: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --admin-font: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-accent: 'Kaushan Script', cursive;
+  --font-size-2xs: 0.6rem;
+  --font-size-caption: 0.6875rem;
+  --font-size-xs: 0.7rem;
+  --font-size-sm: 0.75rem;
+  --font-size-body-sm: 0.875rem;
+  --font-size-base: 0.8rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.2rem;
+  --font-size-xl: 1.4rem;
+  --font-size-2xl: 1.6rem;
+  --font-size-3xl: 2rem;
+  --font-size-4xl: 2.4rem;
+  --font-size-5xl: 3.2rem;
+  --font-size-display: 4rem;
+
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+
+  --line-height-tight: 1.1;
+  --line-height-snug: 1.3;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.6;
+
+  /* Spacing */
+  --space-1: 0.2rem;
+  --space-2: 0.4rem;
+  --space-3: 0.6rem;
+  --space-4: 0.8rem;
+  --space-5: 1rem;
+  --space-6: 1.2rem;
+  --space-8: 1.6rem;
+  --space-10: 2rem;
+  --space-12: 2.4rem;
+  --space-16: 3.2rem;
+  --space-24: 4.8rem;
+
+  /* Border radius */
+  --radius-xs: 0.25rem;
+  --radius-2xs: 0.3rem;
+  --radius-sm: 0.2rem;
+  --radius-md: 0.4rem;
+  --radius-control: 0.55rem;
+  --radius-lg: 0.6rem;
+  --radius-xl: 0.8rem;
+  --radius-2xl: 0.9rem;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+
+  /* Layout
+   * The whole UI is set at 80% of the original design (Figma "Home Page 2",
+   * node 47:2). A 1280px content column at 80% = 1024px, which with the 25.6px
+   * desktop gutter resolves to a 1075.2px outer max-width.
+   */
+  --container-max-width: 1075.2px;
+  --header-height: auto;
+
+  /* Sticky header offset for in-page anchor navigation.
+   * 84px = 82.4px top tier + 1.6px hairline (below 768px); the full two-tier
+   * header is ~162px from 768px up (see the media query at the end of this
+   * file). Keep in sync with Header.module.css.
+   */
+  --header-offset: 84px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--header-offset);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-primary);
+  background-color: var(--color-background);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+button {
+  font-family: inherit;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+/* The bottom header tier appears from 768px up, so anchor targets need the
+ * full sticky-header offset there (~162px: 84px top tier + ~78px bottom tier). */
+@media (min-width: 768px) {
+  :root {
+    --header-offset: 162px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

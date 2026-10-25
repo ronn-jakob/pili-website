@@ -1,0 +1,117 @@
+.section {
+  padding: 26px 0 0;
+  scroll-margin-top: calc(var(--header-offset) + 24px);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-family-heading);
+  font-size: 18px;
+  font-weight: var(--font-weight-bold);
+  line-height: 1.3;
+  color: var(--color-page-ink);
+}
+
+.description {
+  margin: 4px 0 0;
+  font-family: var(--font-family-heading);
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--color-page-muted);
+}
+
+.passwordGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px 30px;
+  max-width: 710px;
+  margin-top: 20px;
+}
+
+.field {
+  min-width: 0;
+}
+
+.label {
+  display: block;
+  font-family: var(--font-family-heading);
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.3;
+  color: var(--color-page-muted);
+}
+
+.input {
+  width: 100%;
+  height: 46px;
+  margin-top: 8px;
+  padding: 0 14px;
+  border: 1.5px solid #e0e5eb;
+  border-radius: 10px;
+  background-color: #ffffff;
+  font-family: var(--font-family-heading);
+  font-size: 14px;
+  color: var(--color-page-ink);
+  transition: border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.passwordWrap {
+  position: relative;
+  margin-top: 8px;
+}
+
+.passwordWrap .input {
+  margin-top: 0;
+}
+
+.inputWithToggle {
+  padding-right: 46px;
+}
+
+.passwordToggle {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  color: var(--color-page-muted);
+  transform: translateY(-50%);
+}
+
+.input:hover {
+  border-color: #c9d0da;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-page-link);
+  box-shadow: 0 0 0 3px rgba(26, 102, 229, 0.12);
+}
+
+.input::placeholder {
+  color: #a3a9b3;
+}
+
+.hint {
+  align-self: end;
+  margin: 0 0 13px;
+  font-family: var(--font-family-heading);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--color-page-muted);
+}
+
+@media (max-width: 1199px) {
+  .passwordGrid {
+    max-width: none;
+  }
+}
+
+@media (max-width: 899px) {
+  .passwordGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hint {
+    margin: 0;
+  }
+}

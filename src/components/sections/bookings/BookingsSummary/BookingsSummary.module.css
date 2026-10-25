@@ -1,0 +1,44 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 72px;
+  padding: 12px 20px;
+  border: 1px solid var(--color-page-border);
+  border-radius: 12px;
+  background-color: var(--color-page-surface);
+}
+
+.label {
+  font-family: var(--font-family-heading);
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-page-muted);
+}
+
+.value {
+  margin-top: 6px;
+  font-family: var(--font-family-heading);
+  font-size: 22px;
+  font-weight: var(--font-weight-bold);
+  line-height: 1.2;
+  color: var(--color-page-ink);
+}
+
+@media (max-width: 1023px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 639px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

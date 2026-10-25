@@ -1,0 +1,200 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  padding: 28px;
+  border-radius: 14px;
+  background-color: #ffffff;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.label {
+  padding: 0;
+  font-family: var(--font-family);
+  font-size: 15px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-page-ink);
+}
+
+.helper {
+  font-family: var(--font-family);
+  font-size: 13px;
+  color: var(--color-page-muted);
+}
+
+.field {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid var(--color-page-border);
+  border-radius: 10px;
+  background-color: var(--color-booking-field);
+  font-family: var(--font-family);
+  font-size: 14px;
+  color: var(--color-page-ink);
+  outline: none;
+}
+
+.tall {
+  height: 52px;
+}
+
+.field::placeholder,
+.textarea::placeholder {
+  color: var(--color-page-muted);
+}
+
+.field:focus-visible,
+.textarea:focus-visible {
+  border-color: var(--color-primary);
+  outline: 2px solid var(--color-primary);
+  outline-offset: 0;
+}
+
+select.field {
+  appearance: none;
+  cursor: pointer;
+}
+
+.twoColumns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.smallField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: var(--font-family);
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-page-muted);
+}
+
+.promoRow {
+  position: relative;
+}
+
+.promoInput {
+  padding-right: 110px;
+}
+
+.applyButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 90px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background-color: var(--color-primary);
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.applyButton:hover {
+  background-color: var(--color-primary-dark);
+}
+
+.applyButton:focus-visible {
+  outline: 2px solid var(--color-primary-dark);
+  outline-offset: 2px;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 12px 16px;
+  border: 1px solid var(--color-page-border);
+  border-radius: 10px;
+  background-color: var(--color-booking-field);
+  font-family: var(--font-family);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-page-ink);
+  resize: vertical;
+  outline: none;
+}
+
+.terms {
+  font-family: var(--font-family);
+  font-size: 12px;
+  color: var(--color-page-muted);
+}
+
+.divider {
+  height: 1px;
+  background-color: var(--color-page-border);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.footerNote {
+  font-family: var(--font-family);
+  font-size: 13px;
+  color: var(--color-page-muted);
+}
+
+.continueButton {
+  width: 180px;
+  height: 48px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 24px;
+  background-color: var(--color-primary);
+  font-family: var(--font-family);
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.continueButton:hover {
+  background-color: var(--color-primary-dark);
+}
+
+.continueButton:focus-visible {
+  outline: 2px solid var(--color-primary-dark);
+  outline-offset: 2px;
+}
+
+@media (max-width: 767px) {
+  .form {
+    padding: 20px;
+    gap: 22px;
+  }
+
+  .twoColumns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .continueButton {
+    width: 100%;
+  }
+}

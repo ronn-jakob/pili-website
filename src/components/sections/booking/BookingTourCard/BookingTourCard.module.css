@@ -1,0 +1,60 @@
+.card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 120px;
+  padding: 16px;
+  border-radius: 14px;
+  background-color: #ffffff;
+}
+
+.thumbnail {
+  width: 88px;
+  height: 88px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background-color: #e0e5ed;
+  object-fit: cover;
+  object-position: center;
+}
+
+.body {
+  min-width: 0;
+}
+
+.title {
+  font-family: var(--font-family);
+  font-size: 18px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-page-ink);
+}
+
+.meta {
+  margin-top: 6px;
+  font-family: var(--font-family);
+  font-size: 13px;
+  color: var(--color-page-muted);
+}
+
+.cancellation {
+  margin-top: 8px;
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-booking-success);
+}
+
+@media (max-width: 767px) {
+  .card {
+    align-items: flex-start;
+  }
+
+  .thumbnail {
+    width: 72px;
+    height: 72px;
+  }
+
+  .title {
+    font-size: 16px;
+  }
+}

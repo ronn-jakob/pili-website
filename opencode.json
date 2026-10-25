@@ -1,0 +1,25 @@
+{
+  "mcp": {
+    "servers": {
+      "figma": {
+        "type": "remote",
+        "url": "https://mcp.figma.com/mcp"
+      },
+      "firebase": {
+        "type": "local",
+        "command": [
+          "npx",
+          "-y",
+          "firebase-tools@latest",
+          "mcp",
+          "--dir",
+          "C:/Users/jakob/OneDrive/Documents/React/react-project/pili-website",
+          "--only",
+          "firestore"
+        ],
+        "enabled": true,
+        "timeout": 60000
+      }
+    }
+  }
+}

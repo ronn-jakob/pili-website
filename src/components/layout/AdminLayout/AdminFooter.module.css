@@ -1,0 +1,24 @@
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 92px;
+  padding: 0 24px;
+  border-top: 1px solid var(--admin-border);
+  background-color: #ffffff;
+}
+
+.copy {
+  margin: 0;
+  font-family: var(--admin-font);
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: center;
+  color: var(--admin-faint);
+}
+
+@media (max-width: 767px) {
+  .footer {
+    height: 72px;
+  }
+}

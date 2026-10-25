@@ -1,0 +1,57 @@
+.button {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-card-placeholder);
+  cursor: pointer;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+.button:hover {
+  transform: scale(1.06);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  border-radius: var(--radius-full);
+}
+
+.button[aria-pressed='true'] {
+  color: var(--color-wishlist-active);
+}
+
+.button[aria-pressed='true'] path {
+  stroke: var(--color-wishlist-active);
+}
+
+.icon {
+  width: 25px;
+  height: 25px;
+}
+
+/* Darker idle heart for pastel/photo backgrounds. */
+.dark {
+  color: #595959;
+}
+
+/* Raised variant for hearts sitting on top of a photo. */
+.raised {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.raised .icon {
+  width: 20px;
+  height: 20px;
+}
+
+.raised:focus-visible {
+  border-radius: 8px;
+}

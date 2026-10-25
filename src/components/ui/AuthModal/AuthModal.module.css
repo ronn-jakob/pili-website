@@ -1,0 +1,472 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 51.2px 12.8px 19.2px;
+  overflow-y: auto;
+  background-color: var(--color-modal-overlay);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 220ms ease, visibility 0s linear 220ms;
+}
+
+.overlayOpen {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 220ms ease;
+}
+
+.dialog {
+  position: relative;
+  width: 526.4px;
+  max-width: 100%;
+  margin-block: auto;
+  opacity: 0;
+  transform: translateY(10px) scale(0.96);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.dialogSignup {
+  width: 1052.8px;
+}
+
+.overlayOpen .dialog {
+  opacity: 1;
+  transform: none;
+  transition-duration: 220ms;
+}
+
+/* Sits just outside the modal on the dark backdrop. Keeps a 44px hit target
+ * while the visible glyph is scaled to the modal's 0.8x design. */
+.close {
+  position: absolute;
+  top: -44px;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background-color: transparent;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.close:hover {
+  background-color: rgba(255, 255, 255, 0.16);
+}
+
+.close:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.panel {
+  position: relative;
+  width: 100%;
+  border-radius: 16px;
+  background-color: var(--color-hero-field);
+  color: #000000;
+}
+
+.loginPanel {
+  padding: 8px 13.6px 25.6px;
+}
+
+.signupPanel {
+  padding: 9.6px 13.6px 25.6px;
+}
+
+/* The modal mark is icon 40px + wordmark 55.2px, overlapping by 4px.
+ * The doubled class raises specificity above Logo's `.large` size. */
+.modalLogo.modalLogo {
+  --icon-height: 40px;
+  --name-height: 55.2px;
+  --name-scale: 55.2px;
+  --name-offset: -4px;
+  gap: 0;
+  margin-left: 0;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 55.2px;
+}
+
+.topDivider {
+  height: 0.8px;
+  margin-top: 4.8px;
+  margin-right: 3.2px;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.signupPanel .topDivider {
+  margin-top: 1.2px;
+  margin-right: 0;
+}
+
+.title {
+  margin-top: 23.2px;
+  font-family: var(--font-family);
+  font-size: 28.8px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.5;
+  text-align: center;
+  color: #000000;
+}
+
+.signupPanel .title {
+  margin-top: 12.4px;
+}
+
+/* Shared form primitives */
+
+.field {
+  position: relative;
+  display: block;
+}
+
+.fieldSpaced {
+  margin-top: 24px;
+}
+
+.input {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px 0 53.6px;
+  border: 1.6px solid #000000;
+  border-radius: 16px;
+  background-color: transparent;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: var(--font-weight-light);
+  line-height: 1.5;
+  color: var(--color-text-strong);
+}
+
+.inputWithToggle {
+  padding-right: 53.6px;
+}
+
+.passwordToggle {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  color: #000000;
+  transform: translateY(-50%);
+}
+
+.input::placeholder {
+  color: rgba(0, 0, 0, 0.47);
+  opacity: 1;
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.fieldIcon {
+  position: absolute;
+  top: 50%;
+  left: 16px;
+  color: #000000;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.emailIcon {
+  width: 21.6px;
+  height: 16.8px;
+}
+
+.signupEmailIcon {
+  width: 20.8px;
+  height: 16px;
+}
+
+.passwordIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.personIcon {
+  width: 15.5751px;
+  height: 17.6px;
+}
+
+.houseIcon {
+  width: 19.2px;
+  height: 19.2px;
+}
+
+.phoneIcon {
+  width: 18.4px;
+  height: 18.4px;
+}
+
+.primaryButton {
+  display: block;
+  width: 100%;
+  height: 48px;
+  padding: 0;
+  border: none;
+  border-radius: 16px;
+  background-color: var(--color-modal-button);
+  font-family: inherit;
+  font-size: 19.2px;
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+  color: #ffffff;
+  cursor: pointer;
+  transition: filter var(--transition-fast);
+}
+
+.primaryButton:hover {
+  filter: brightness(1.05);
+}
+
+.primaryButton:focus-visible {
+  outline: 2px solid var(--color-text-strong);
+  outline-offset: 2px;
+}
+
+.secondaryButton {
+  display: block;
+  height: 48px;
+  padding: 0;
+  border: 1.6px solid #000000;
+  border-radius: 16px;
+  background-color: transparent;
+  font-family: inherit;
+  font-size: 19.2px;
+  font-weight: var(--font-weight-normal);
+  line-height: 1;
+  color: var(--color-text-strong);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.secondaryButton:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.secondaryButton:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.accountRow {
+  display: flex;
+  align-items: center;
+  gap: 6.4px;
+  margin-top: 15.2px;
+  margin-right: 3.2px;
+}
+
+.accountLine {
+  flex: 1 1 auto;
+  height: 0.8px;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.accountLabel {
+  flex: none;
+  font-size: 12px;
+  font-weight: var(--font-weight-light);
+  line-height: 1.5;
+  color: #000000;
+  white-space: nowrap;
+}
+
+.terms {
+  max-width: 248.8px;
+  margin: 26.4px auto 0;
+  font-size: 8.8px;
+  font-weight: var(--font-weight-normal);
+  line-height: 1.55;
+  text-align: center;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+/* Login layout */
+
+.loginForm {
+  width: 410.4px;
+  max-width: 100%;
+  margin: 28.8px auto 0;
+}
+
+.forgotRow {
+  margin-top: 9.6px;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: right;
+}
+
+.forgotLink {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: var(--font-weight-light);
+  line-height: 1.5;
+  color: #000000;
+  text-decoration: underline;
+  text-underline-position: from-font;
+}
+
+.forgotLink:hover,
+.forgotLink:focus-visible {
+  color: var(--color-primary);
+}
+
+.forgotLink:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+.loginSubmit {
+  margin-top: 37.6px;
+}
+
+.loginSecondary {
+  width: 410.4px;
+  max-width: 100%;
+  margin: 15.2px auto 0;
+}
+
+/* Sign-up layout */
+
+.signupForm {
+  margin-top: 33.6px;
+}
+
+.signupColumns {
+  display: grid;
+  grid-template-columns: 410.4px 410.4px;
+  column-gap: 104.8px;
+  justify-content: center;
+}
+
+.signupColumn {
+  min-width: 0;
+}
+
+.columnTitle {
+  margin: 0 0 25.6px;
+  font-family: var(--font-family);
+  font-size: 19.2px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.5;
+  color: #000000;
+}
+
+.columnFields {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.signupColumns .fieldIcon {
+  left: 18.4px;
+}
+
+.signupAccountRow {
+  width: 496px;
+  margin: 16px 0 0 -42.8px;
+}
+
+.signupSecondary {
+  width: 100%;
+  margin-top: 14.8px;
+}
+
+.verticalDivider {
+  position: absolute;
+  top: 152px;
+  left: 50%;
+  width: 0.8px;
+  height: 488.8px;
+  margin-left: -0.4px;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* On wide viewports the sign-up panel edges into the header action area, so
+ * keep the close control beside the panel instead of above it. */
+@media (min-width: 1173px) {
+  .dialogSignup .close {
+    top: 0;
+    right: -52px;
+  }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The two-column sign-up layout stacks below the site's 1024px breakpoint. */
+@media (max-width: 1023px) {
+  .signupColumns {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 32px;
+    justify-content: stretch;
+  }
+
+  .signupColumn + .signupColumn {
+    padding-top: 32px;
+    border-top: 0.8px solid rgba(0, 0, 0, 0.5);
+  }
+
+  .signupAccountRow {
+    width: 100%;
+    margin: 16px 0 0;
+  }
+
+  .verticalDivider {
+    display: none;
+  }
+}
+
+@media (max-width: 719px) {
+  .overlay {
+    padding: 44.8px 12.8px 16px;
+  }
+
+  .loginPanel,
+  .signupPanel {
+    padding-right: 12.8px;
+    padding-left: 12.8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .overlayOpen,
+  .dialog,
+  .overlayOpen .dialog {
+    transition: none;
+  }
+
+  .dialog {
+    transform: none;
+  }
+}
