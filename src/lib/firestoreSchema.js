@@ -8,6 +8,7 @@ export const COLLECTIONS = Object.freeze({
   tours: 'tours',
   departures: 'departures',
   bookings: 'bookings',
+  bookingChanges: 'bookingChanges',
   payments: 'payments',
   cancellationRequests: 'cancellationRequests',
   reviews: 'reviews',

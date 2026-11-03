@@ -1,10 +1,22 @@
+import { useNavigate } from 'react-router-dom';
 import styles from './DestinationsHero.module.css';
 import heroImage from '../../../../Images/destinations-hero.png';
 
-function DestinationsHero() {
+function DestinationsHero({ initialValue = '' }) {
+  const navigate = useNavigate();
+
   const handleSubmit = (event) => {
-    // Search will be wired to real data once the backend exists.
     event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const destination = String(
+      formData.get('destination') ?? '',
+    ).trim();
+
+    navigate(
+      destination
+        ? `/destinations?search=${encodeURIComponent(destination)}`
+        : '/destinations',
+    );
   };
 
   return (
@@ -40,6 +52,7 @@ function DestinationsHero() {
             className={styles.searchInput}
             placeholder="Baguio"
             autoComplete="off"
+            defaultValue={initialValue}
           />
           <button
             type="submit"

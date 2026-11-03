@@ -21,22 +21,12 @@ const discountOptions = [
   {
     key: 'earlyBird',
     title: 'Early bird discount',
-    meta: '10% · Book 14 days ahead',
+    meta: 'Applied when the booking is made far enough before departure',
   },
   {
     key: 'group',
     title: 'Group booking discount',
-    meta: '8% · 6 or more travelers',
-  },
-  {
-    key: 'student',
-    title: 'Student discount',
-    meta: '5% · Valid ID required',
-  },
-  {
-    key: 'senior',
-    title: 'Senior / PWD discount',
-    meta: 'As applicable by law',
+    meta: 'Applied when the party meets the minimum group size',
   },
 ];
 
@@ -70,17 +60,20 @@ function createEmptyDraft() {
     infantPrice: '',
     minGroupSize: 6,
     groupDiscount: 8,
+    earlyBirdPercent: 10,
+    earlyBirdDays: 14,
     taxesAndFees: 'Included in displayed price',
     discounts: {
       earlyBird: true,
       group: true,
       student: false,
-      senior: true,
+      senior: false,
     },
     status: TOUR_STATUS.draft,
     rejectionReason: '',
     itinerary: [{ day: 1, title: '', text: '', location: null }],
     photos: [],
+    coverImage: '',
     inclusions: [],
     exclusions: [],
     rules: [],
@@ -281,7 +274,11 @@ function TourEditor({
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoProgress, setPhotoProgress] = useState(0);
   const [photoError, setPhotoError] = useState('');
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [coverProgress, setCoverProgress] = useState(0);
+  const [coverError, setCoverError] = useState('');
   const photoInputRef = useRef(null);
+  const coverInputRef = useRef(null);
   const navigate = useNavigate();
 
   const activeDestinationIds = useMemo(
@@ -569,6 +566,44 @@ function TourEditor({
       ...current,
       photos: current.photos.filter((_, photoIndex) => photoIndex !== index),
     }));
+  };
+
+  const handleCoverSelect = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+
+    if (!file || coverUploading) {
+      return;
+    }
+
+    setCoverError('');
+    setCoverUploading(true);
+    setCoverProgress(0);
+
+    try {
+      const result = await uploadTourImage(file, setCoverProgress);
+      setDraft((current) => ({
+        ...current,
+        coverImage: result.url,
+      }));
+    } catch (error) {
+      setCoverError(
+        error?.message || 'Could not upload that image. Please try again.',
+      );
+    } finally {
+      setCoverUploading(false);
+      setCoverProgress(0);
+    }
+  };
+
+  const removeCover = () => {
+    setDraft((current) => ({ ...current, coverImage: '' }));
+    setCoverError('');
+  };
+
+  const promotePhotoAsCover = (url) => {
+    setDraft((current) => ({ ...current, coverImage: url }));
+    setCoverError('');
   };
 
   const toggleDiscount = (key) => {
@@ -1034,6 +1069,39 @@ function TourEditor({
                 </select>
               </label>
             </div>
+
+            <div className={styles.twoCols}>
+              <label className={styles.field}>
+                <span className={styles.label}>Early bird discount (%)</span>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  className={styles.input}
+                  value={draft.earlyBirdPercent}
+                  onChange={(event) =>
+                    updateNumericField(
+                      'earlyBirdPercent',
+                      event.target.value,
+                    )
+                  }
+                />
+              </label>
+              <label className={styles.field}>
+                <span className={styles.label}>
+                  Early bird cutoff (days before departure)
+                </span>
+                <input
+                  type="number"
+                  min="0"
+                  className={styles.input}
+                  value={draft.earlyBirdDays}
+                  onChange={(event) =>
+                    updateNumericField('earlyBirdDays', event.target.value)
+                  }
+                />
+              </label>
+            </div>
           </section>
 
           <section
@@ -1068,6 +1136,93 @@ function TourEditor({
             </div>
           </section>
         </div>
+
+        <section
+          className={styles.section}
+          aria-labelledby="tour-cover-title"
+        >
+          <div className={styles.photoHeader}>
+            <h2 id="tour-cover-title" className={styles.sectionTitle}>
+              Website image
+            </h2>
+            {draft.coverImage && (
+              <span className={styles.photoCount}>Used on tour cards</span>
+            )}
+          </div>
+
+          <p className={styles.photoHint}>
+            This image appears on package cards and the package detail hero.
+            It is separate from the tour detail gallery.
+          </p>
+
+          <input
+            ref={coverInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className={styles.fileInput}
+            onChange={handleCoverSelect}
+          />
+
+          {draft.coverImage ? (
+            <div className={styles.coverPreviewWrap}>
+              <img
+                src={draft.coverImage}
+                alt="Tour website cover"
+                className={styles.coverPreview}
+              />
+              <div className={styles.coverActions}>
+                <button
+                  type="button"
+                  className={styles.upload}
+                  onClick={() => coverInputRef.current?.click()}
+                  disabled={coverUploading}
+                >
+                  {coverUploading
+                    ? `Uploading… ${coverProgress}%`
+                    : 'Replace website image'}
+                </button>
+                <button
+                  type="button"
+                  className={styles.removePhoto}
+                  onClick={removeCover}
+                  disabled={coverUploading}
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className={styles.upload}
+              onClick={() => coverInputRef.current?.click()}
+              disabled={coverUploading}
+            >
+              {coverUploading
+                ? `Uploading… ${coverProgress}%`
+                : '+ Upload website image · JPG, PNG or WebP · Up to 5 MB'}
+            </button>
+          )}
+
+          {coverUploading && (
+            <div
+              className={styles.uploadProgress}
+              role="progressbar"
+              aria-label="Website image upload progress"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow={coverProgress}
+            >
+              <span style={{ width: `${coverProgress}%` }} />
+            </div>
+          )}
+
+          {coverError && (
+            <p className={styles.photoError} role="alert">
+              {coverError}
+            </p>
+          )}
+        </section>
 
         <section
           className={`${styles.section} ${styles.photos}`}
@@ -1130,6 +1285,16 @@ function TourEditor({
                     alt={`Tour photo ${index + 1}`}
                     className={styles.photoPreview}
                   />
+                  {draft.coverImage === photo && (
+                    <span className={styles.coverBadge}>Website image</span>
+                  )}
+                  <button
+                    type="button"
+                    className={styles.useAsCover}
+                    onClick={() => promotePhotoAsCover(photo)}
+                  >
+                    Use as website image
+                  </button>
                   <button
                     type="button"
                     className={styles.removePhoto}

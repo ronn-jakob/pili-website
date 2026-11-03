@@ -17,6 +17,8 @@ import {
   DESTINATION_STATUS,
   TOUR_STATUS,
 } from './firestoreSchema';
+import { createNotification } from './notifications';
+import { logAdminAction } from './auditLogs';
 import { normalizeLocation } from './maps';
 
 export const TOUR_STATUS_LABEL = Object.freeze({
@@ -150,6 +152,8 @@ function mapTour(snapshot) {
     infantPrice: toNumber(pricing.infant),
     minGroupSize: toNumber(pricing.minGroupSize, 1),
     groupDiscount: toNumber(pricing.groupDiscountPercent),
+    earlyBirdPercent: toNumber(pricing.earlyBirdPercent),
+    earlyBirdDays: toNumber(pricing.earlyBirdDays),
     taxesFeesMode,
     taxesAndFees:
       taxesFeesMode === 'added_at_checkout'
@@ -167,6 +171,7 @@ function mapTour(snapshot) {
     summary: [durationLabel, category].filter(Boolean).join(' · '),
     bookings: toNumber(data.bookingCount),
     photos: Array.isArray(data.images) ? data.images : [],
+    coverImage: data.coverImage ?? '',
     inclusions: Array.isArray(data.inclusions) ? data.inclusions : [],
     exclusions: Array.isArray(data.exclusions) ? data.exclusions : [],
     rules: Array.isArray(data.rules) ? data.rules : [],
@@ -223,6 +228,7 @@ function buildTourContent(values) {
       address: (values.meetingPointAddress ?? '').trim(),
     },
     images: Array.isArray(values.photos) ? values.photos : [],
+    coverImage: values.coverImage ?? '',
     inclusions: Array.isArray(values.inclusions) ? values.inclusions : [],
     exclusions: Array.isArray(values.exclusions) ? values.exclusions : [],
     rules: Array.isArray(values.rules) ? values.rules : [],
@@ -242,6 +248,14 @@ function buildTourContent(values) {
       groupDiscountPercent: Math.min(
         100,
         Math.max(0, toNumber(values.groupDiscount)),
+      ),
+      earlyBirdPercent: Math.min(
+        100,
+        Math.max(0, toNumber(values.earlyBirdPercent)),
+      ),
+      earlyBirdDays: Math.max(
+        0,
+        Math.floor(toNumber(values.earlyBirdDays)),
       ),
       taxesFeesMode:
         values.taxesAndFees === 'Added at checkout'
@@ -349,7 +363,67 @@ export async function moderateTour(tourId, status, rejectionReason = '') {
     payload.rejectionReason = '';
   }
 
-  await updateDoc(doc(db, COLLECTIONS.tours, tourId), payload);
+  const tourRef = doc(db, COLLECTIONS.tours, tourId);
+  const tourSnapshot = await getDoc(tourRef);
+
+  if (!tourSnapshot.exists()) {
+    throw new Error('That tour could not be found.');
+  }
+
+  const tour = tourSnapshot.data();
+  await updateDoc(tourRef, payload);
+
+  await logAdminAction({
+    action: `tour.${status}`,
+    targetType: 'tour',
+    targetId: tourId,
+    summary: `Set tour ${tour.title || tourId} to ${status}.`,
+  });
+
+  if (tour.operatorId) {
+    const labels = {
+      [TOUR_STATUS.published]: {
+        type: 'tour_approved',
+        title: 'Tour approved',
+        message: `${tour.title || 'Your tour'} is now published.`,
+      },
+      [TOUR_STATUS.rejected]: {
+        type: 'tour_rejected',
+        title: 'Tour rejected',
+        message: `${tour.title || 'Your tour'} was rejected. ${
+          rejectionReason.trim() || 'Review the admin feedback and resubmit.'
+        }`,
+      },
+      [TOUR_STATUS.hidden]: {
+        type: 'tour_hidden',
+        title: 'Tour hidden',
+        message: `${tour.title || 'Your tour'} was hidden by an administrator.`,
+      },
+      [TOUR_STATUS.archived]: {
+        type: 'tour_archived',
+        title: 'Tour archived',
+        message: `${tour.title || 'Your tour'} was archived by an administrator.`,
+      },
+    };
+    const notification = labels[status];
+
+    if (notification) {
+      try {
+        await createNotification({
+          id: `tour-${status}-${tourId}-${Date.now()}`,
+          userId: tour.operatorId,
+          role: 'operator',
+          type: notification.type,
+          title: notification.title,
+          message: notification.message,
+          link: `/operator/tours/${tourId}/edit`,
+          tourId,
+        });
+      } catch {
+        // Moderation succeeds even if the notification fails.
+      }
+    }
+  }
 }
 
 export async function getActiveDestinations() {

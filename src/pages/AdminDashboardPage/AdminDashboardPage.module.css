@@ -50,6 +50,51 @@
   gap: 24px;
 }
 
+.auditCard {
+  padding: 20px;
+  border: 1px solid var(--admin-border);
+  border-radius: 14px;
+  background-color: #ffffff;
+}
+
+.auditTitle {
+  margin: 0 0 12px;
+  font-family: var(--admin-font);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--admin-ink);
+}
+
+.auditList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.auditRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--admin-border);
+  font-family: var(--admin-font);
+  font-size: 12px;
+  color: var(--admin-ink);
+}
+
+.auditRow:last-child {
+  border-bottom: none;
+}
+
+.auditDate {
+  flex: 0 0 auto;
+  font-size: 11px;
+  color: var(--admin-faint);
+}
+
 @media (max-width: 1279px) {
   .mid {
     grid-template-columns: minmax(0, 1fr);

@@ -67,7 +67,11 @@ function AdminLayout() {
 
   return (
     <div className={styles.shell}>
-      <AdminHeader user={session.user} onLogout={handleLogout} />
+      <AdminHeader
+        user={session.user}
+        onLogout={handleLogout}
+        notificationsPath="/admin/notifications"
+      />
       <div className={styles.body}>
         <AdminSidebar />
         <main className={styles.main}>

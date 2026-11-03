@@ -3,15 +3,24 @@ import BookingHeader from '../../components/sections/booking/BookingHeader/Booki
 import BookingTourCard from '../../components/sections/booking/BookingTourCard/BookingTourCard';
 import BookingReviewDetails from '../../components/sections/booking/BookingReviewDetails/BookingReviewDetails';
 import BookingReviewSummary from '../../components/sections/booking/BookingReviewSummary/BookingReviewSummary';
-import { getPackageById } from '../../data/packages';
+import usePublicPackage from '../../hooks/usePublicPackage';
+import { normalizeTravelers } from '../../utils/travelers';
 import styles from './BookingReviewPage.module.css';
 
 function BookingReviewPage() {
   const { packageId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const pkg = getPackageById(packageId);
+  const { pkg, loading } = usePublicPackage(packageId);
   const state = location.state;
+
+  if (loading && !pkg) {
+    return (
+      <main className="page-loading">
+        <p>Loading your booking…</p>
+      </main>
+    );
+  }
 
   if (!pkg) {
     return <Navigate to="/packages" replace />;
@@ -21,7 +30,8 @@ function BookingReviewPage() {
     return <Navigate to={`/packages/${pkg.id}/book`} replace />;
   }
 
-  const { date, travelers, details, departureId } = state;
+  const { date, details, departureId } = state;
+  const travelers = normalizeTravelers(state.travelers);
   const flowState = { date, travelers, details, departureId };
 
   return (

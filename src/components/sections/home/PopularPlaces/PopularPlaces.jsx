@@ -78,6 +78,7 @@ function PopularPlaceCard({ place }) {
         </div>
 
         <WishlistButton
+          tourId={place.id}
           itemName={place.title}
           className={styles.heart}
         />

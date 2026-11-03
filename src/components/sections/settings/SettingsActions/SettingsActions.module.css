@@ -58,9 +58,15 @@
   color: #ffffff;
 }
 
-.save:hover {
+.save:hover:not(:disabled) {
   border-color: #1552bb;
   background-color: #1552bb;
+}
+
+.cancel:disabled,
+.save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .cancel:focus-visible,
@@ -75,6 +81,14 @@
   font-size: 12px;
   font-weight: var(--font-weight-medium);
   color: #268c59;
+}
+
+.error {
+  margin: 14px 0 0;
+  font-family: var(--font-family-heading);
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-error);
 }
 
 @media (max-width: 639px) {

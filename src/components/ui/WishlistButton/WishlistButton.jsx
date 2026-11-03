@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import useTravelerAuth from '../../../context/useTravelerAuth';
+import useWishlist from '../../../context/useWishlist';
 import styles from './WishlistButton.module.css';
 
 function HeartIcon() {
@@ -25,12 +28,18 @@ function HeartIcon() {
 }
 
 function WishlistButton({
+  tourId = '',
   itemName,
   className = '',
   raised = false,
   tone = 'default',
 }) {
-  const [wishlisted, setWishlisted] = useState(false);
+  const { traveler } = useTravelerAuth();
+  const { isWishlisted, toggleWishlist } = useWishlist();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [pending, setPending] = useState(false);
+  const wishlisted = tourId ? isWishlisted(tourId) : false;
   const classes = [
     styles.button,
     raised ? styles.raised : '',
@@ -40,6 +49,28 @@ function WishlistButton({
     .filter(Boolean)
     .join(' ');
 
+  const handleClick = async () => {
+    if (!tourId || pending) {
+      return;
+    }
+
+    if (!traveler) {
+      const from = `${location.pathname}${location.search}`;
+      navigate(`/?auth=login&from=${encodeURIComponent(from)}`);
+      return;
+    }
+
+    setPending(true);
+
+    try {
+      await toggleWishlist(tourId);
+    } catch {
+      // The context reverts the optimistic state and exposes the error.
+    } finally {
+      setPending(false);
+    }
+  };
+
   return (
     <button
       type="button"
@@ -48,7 +79,8 @@ function WishlistButton({
         wishlisted ? 'from' : 'to'
       } wishlist`}
       aria-pressed={wishlisted}
-      onClick={() => setWishlisted((current) => !current)}
+      disabled={!tourId || pending}
+      onClick={handleClick}
     >
       <HeartIcon />
     </button>

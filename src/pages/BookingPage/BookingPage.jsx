@@ -3,21 +3,30 @@ import BookingHeader from '../../components/sections/booking/BookingHeader/Booki
 import BookingTourCard from '../../components/sections/booking/BookingTourCard/BookingTourCard';
 import BookingDetailsForm from '../../components/sections/booking/BookingDetailsForm/BookingDetailsForm';
 import BookingSummary from '../../components/sections/booking/BookingSummary/BookingSummary';
-import { getPackageById } from '../../data/packages';
+import usePublicPackage from '../../hooks/usePublicPackage';
+import { normalizeTravelers } from '../../utils/travelers';
 import styles from './BookingPage.module.css';
 
 function BookingPage() {
   const { packageId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const pkg = getPackageById(packageId);
+  const { pkg, loading } = usePublicPackage(packageId);
+
+  if (loading && !pkg) {
+    return (
+      <main className="page-loading">
+        <p>Loading checkout…</p>
+      </main>
+    );
+  }
 
   if (!pkg) {
     return <Navigate to="/packages" replace />;
   }
 
   const state = location.state ?? {};
-  const travelers = Math.min(8, Math.max(1, Number(state.travelers) || 2));
+  const travelers = normalizeTravelers(state.travelers);
   const dateValue =
     typeof state.date === 'string' && state.date
       ? state.date

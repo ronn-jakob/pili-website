@@ -1,4 +1,11 @@
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+} from 'firebase/firestore';
 import fallbackImage from '../Images/destinations-hero.png';
 import aklanImage from '../Images/aklan.jpg';
 import banaueImage from '../Images/destinations/banaue.png';
@@ -43,7 +50,7 @@ function canonicalCategory(name) {
 export function mapTourToPackage(tour) {
   const staticPkg = getPackageById(tour.id);
   const heroImage =
-    tour.photos[0] || staticPkg?.heroImage || fallbackImage;
+    tour.coverImage || tour.photos[0] || staticPkg?.heroImage || fallbackImage;
   const duration = tour.duration || staticPkg?.durationLabel || 'Flexible';
   const itinerary = (
     tour.itinerary.length ? tour.itinerary : staticPkg?.itinerary ?? []
@@ -75,6 +82,31 @@ export function mapTourToPackage(tour) {
     reviewCount: staticPkg?.reviewCount || 0,
     priceLabel: formatMoney(tour.price, 'PHP'),
     priceValue: tour.price,
+    minGroupSize: Number(tour.pricing?.minGroupSize) || 1,
+    groupDiscountPercent:
+      Number(tour.pricing?.groupDiscountPercent) || 0,
+    earlyBirdPercent: Number(tour.pricing?.earlyBirdPercent) || 0,
+    earlyBirdDays: Number(tour.pricing?.earlyBirdDays) || 0,
+    discounts: tour.discounts
+      ? {
+          earlyBird: tour.discounts.earlyBird !== false,
+          group: tour.discounts.group !== false,
+        }
+      : {},
+    childPrice:
+      Number(
+        tour.pricing?.child ??
+          tour.childPrice ??
+          staticPkg?.childPrice ??
+          tour.price,
+      ) || 0,
+    infantPrice:
+      Number(
+        tour.pricing?.infant ??
+          tour.infantPrice ??
+          staticPkg?.infantPrice ??
+          0,
+      ) || 0,
     currency: 'PHP',
     serviceFee: staticPkg?.serviceFee ?? 500,
     color: staticPkg?.color || '#dbeafe',
@@ -85,7 +117,9 @@ export function mapTourToPackage(tour) {
     featuredImage: heroImage,
     gallery: tour.photos.length
       ? tour.photos
-      : staticPkg?.gallery ?? [heroImage],
+      : tour.coverImage
+        ? [tour.coverImage]
+        : staticPkg?.gallery ?? [heroImage],
     itinerary,
     inclusions: tour.inclusions.length
       ? tour.inclusions
@@ -98,6 +132,23 @@ export function mapTourToPackage(tour) {
     cancellationHours: staticPkg?.cancellationHours ?? 48,
     featured: Boolean(staticPkg?.featured),
     isStaticPackage: Boolean(staticPkg),
+  };
+}
+
+function normalizeTourSnapshot(snapshot) {
+  const data = snapshot.data();
+
+  return {
+    id: snapshot.id,
+    ...data,
+    photos: Array.isArray(data.images) ? data.images : [],
+    inclusions: Array.isArray(data.inclusions) ? data.inclusions : [],
+    exclusions: Array.isArray(data.exclusions) ? data.exclusions : [],
+    rules: Array.isArray(data.rules) ? data.rules : [],
+    itinerary: Array.isArray(data.itinerary) ? data.itinerary : [],
+    duration: data.durationLabel ?? '',
+    durationDays: Number(data.durationDays) || 1,
+    price: Number(data.pricing?.adult) || 0,
   };
 }
 
@@ -121,25 +172,49 @@ export async function getPublicPackages() {
   );
 
   return toursSnapshot.docs
-    .map((snapshot) => {
-      const data = snapshot.data();
-
-      return {
-        id: snapshot.id,
-        ...data,
-        photos: Array.isArray(data.images) ? data.images : [],
-        inclusions: Array.isArray(data.inclusions) ? data.inclusions : [],
-        exclusions: Array.isArray(data.exclusions) ? data.exclusions : [],
-        rules: Array.isArray(data.rules) ? data.rules : [],
-        itinerary: Array.isArray(data.itinerary) ? data.itinerary : [],
-        duration: data.durationLabel ?? '',
-        durationDays: Number(data.durationDays) || 1,
-        price: Number(data.pricing?.adult) || 0,
-      };
-    })
+    .map(normalizeTourSnapshot)
     .filter((tour) => activeDestinationIds.has(tour.destinationId))
     .map(mapTourToPackage)
     .sort((first, second) => first.title.localeCompare(second.title));
+}
+
+export async function getPublicPackageById(packageId) {
+  if (!packageId) {
+    return null;
+  }
+
+  const snapshot = await getDoc(
+    doc(db, COLLECTIONS.tours, packageId),
+  );
+
+  if (
+    !snapshot.exists() ||
+    snapshot.data().status !== TOUR_STATUS.published
+  ) {
+    return null;
+  }
+
+  const tour = normalizeTourSnapshot(snapshot);
+
+  if (tour.destinationId) {
+    const destinationSnapshot = await getDoc(
+      doc(
+        db,
+        COLLECTIONS.destinations,
+        tour.destinationId,
+      ),
+    );
+
+    if (
+      !destinationSnapshot.exists() ||
+      destinationSnapshot.data().status !==
+        DESTINATION_STATUS.active
+    ) {
+      return null;
+    }
+  }
+
+  return mapTourToPackage(tour);
 }
 
 export async function getPublicDestinations() {

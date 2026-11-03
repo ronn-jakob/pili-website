@@ -1,7 +1,7 @@
 import { pendingActions } from '../../../../data/adminDashboard';
 import styles from './AdminPendingActions.module.css';
 
-function AdminPendingActions() {
+function AdminPendingActions({ actions = pendingActions }) {
   return (
     <section className={styles.card} aria-labelledby="pending-actions-title">
       <h2 id="pending-actions-title" className={styles.title}>
@@ -10,7 +10,7 @@ function AdminPendingActions() {
       <p className={styles.subtitle}>Needs admin attention</p>
 
       <ul className={styles.list}>
-        {pendingActions.map((action) => (
+        {actions.map((action) => (
           <li key={action.id} className={styles.row}>
             <span className={styles.label}>{action.label}</span>
             <span className={`${styles.badge} ${styles[action.tone]}`}>

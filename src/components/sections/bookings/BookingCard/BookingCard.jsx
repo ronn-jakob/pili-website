@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import styles from './BookingCard.module.css';
 
 const statusClass = {
@@ -7,7 +8,11 @@ const statusClass = {
   Cancelled: styles.cancelled,
 };
 
-function BookingCard({ booking }) {
+function BookingCard({
+  booking,
+  onCancel,
+  cancelLoading = false,
+}) {
   return (
     <article className={styles.card}>
       <div className={styles.photoWrap}>
@@ -57,6 +62,20 @@ function BookingCard({ booking }) {
             </p>
             <p className={styles.value}>{booking.includes}</p>
             <p className={styles.policy}>{booking.policy}</p>
+            {booking.refundRequest && (
+              <p className={styles.refundNote}>
+                {booking.refundRequest.status === 'requested' &&
+                  'Refund request pending admin approval.'}
+                {booking.refundRequest.status === 'rejected' &&
+                  `Refund request rejected.${
+                    booking.refundRequest.adminNote
+                      ? ` ${booking.refundRequest.adminNote}`
+                      : ''
+                  }`}
+                {booking.refundRequest.status === 'processed' &&
+                  'Refund approved and processed.'}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -76,17 +95,29 @@ function BookingCard({ booking }) {
         </div>
 
         <div className={styles.buttons}>
-          <button type="button" className={styles.view}>
+          <Link
+            to={`/bookings/${booking.id}`}
+            className={styles.view}
+          >
             View full details
-          </button>
+          </Link>
           {booking.canRequestChange && (
             <button type="button" className={styles.change}>
               Request change
             </button>
           )}
           {booking.canCancel && (
-            <button type="button" className={styles.cancel}>
-              Cancel booking
+            <button
+              type="button"
+              className={styles.cancel}
+              onClick={() => onCancel?.(booking)}
+              disabled={cancelLoading}
+            >
+              {cancelLoading
+                ? 'Working…'
+                : booking.paymentStatusRaw === 'paid'
+                  ? 'Request refund'
+                  : 'Cancel booking'}
             </button>
           )}
         </div>

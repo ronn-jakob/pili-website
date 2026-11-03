@@ -36,6 +36,7 @@ function BookingDetailsForm({ onContinue, initialDetails = {} }) {
           name="pickup"
           className={`${styles.field} ${styles.tall}`}
           defaultValue={initialDetails.pickup ?? ''}
+          required
         >
           {pickupOptions.map((option, index) => (
             <option key={option} value={index === 0 ? '' : option}>
@@ -58,6 +59,7 @@ function BookingDetailsForm({ onContinue, initialDetails = {} }) {
           placeholder="e.g. Manila Hotel, Rizal Park"
           autoComplete="street-address"
           defaultValue={initialDetails.hotel ?? ''}
+          required
         />
       </div>
 
@@ -77,6 +79,7 @@ function BookingDetailsForm({ onContinue, initialDetails = {} }) {
               placeholder="Juan"
               autoComplete="given-name"
               defaultValue={initialDetails.firstName ?? ''}
+              required
             />
           </label>
           <label className={styles.smallField}>
@@ -88,6 +91,7 @@ function BookingDetailsForm({ onContinue, initialDetails = {} }) {
               placeholder="Dela Cruz"
               autoComplete="family-name"
               defaultValue={initialDetails.lastName ?? ''}
+              required
             />
           </label>
           <label className={styles.smallField}>
@@ -99,6 +103,7 @@ function BookingDetailsForm({ onContinue, initialDetails = {} }) {
               placeholder="+63 9XX XXX XXXX"
               autoComplete="tel"
               defaultValue={initialDetails.mobile ?? ''}
+              required
             />
           </label>
           <label className={styles.smallField}>
@@ -110,6 +115,7 @@ function BookingDetailsForm({ onContinue, initialDetails = {} }) {
               placeholder="you@email.com"
               autoComplete="email"
               defaultValue={initialDetails.email ?? ''}
+              required
             />
           </label>
         </div>

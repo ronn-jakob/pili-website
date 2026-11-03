@@ -78,6 +78,8 @@ function OperatorLayout() {
           onLogout={handleLogout}
           homePath="/operator"
           profileRole="Tour Operator"
+          notificationsPath="/operator/notifications"
+          mainSitePath="/"
         />
         <div className={styles.body}>
           <AdminSidebar

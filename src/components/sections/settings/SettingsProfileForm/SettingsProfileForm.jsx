@@ -9,6 +9,7 @@ function Field({
   type = 'text',
   autoComplete,
   full = false,
+  readOnly = false,
 }) {
   return (
     <div className={`${styles.field}${full ? ` ${styles.full}` : ''}`}>
@@ -23,6 +24,7 @@ function Field({
         value={value}
         onChange={(event) => onChange(name, event.target.value)}
         autoComplete={autoComplete}
+        readOnly={readOnly}
       />
     </div>
   );
@@ -115,6 +117,7 @@ function SettingsProfileForm({ draft, onChange }) {
             onChange={onChange}
             autoComplete="email"
             full
+            readOnly
           />
           <Field
             id="profile-mobile"

@@ -1,0 +1,228 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow-y: auto;
+  background-color: rgba(15, 23, 42, 0.52);
+}
+
+.dialog {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  padding: 30px;
+  border-radius: 16px;
+  background-color: #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.28);
+}
+
+.close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #e0e5eb;
+  border-radius: 50%;
+  background-color: #ffffff;
+  font-family: var(--font-family-heading);
+  font-size: 22px;
+  line-height: 1;
+  color: var(--color-page-muted);
+  cursor: pointer;
+}
+
+.close:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.eyebrow {
+  margin: 0;
+  font-family: var(--font-family-heading);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-page-link);
+}
+
+.title {
+  margin: 6px 0 0;
+  font-family: var(--font-family-heading);
+  font-size: 26px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-page-ink);
+}
+
+.subtitle {
+  margin: 6px 0 0;
+  font-family: var(--font-family-heading);
+  font-size: 14px;
+  color: var(--color-page-muted);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.ratingField {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.ratingField legend {
+  margin-bottom: 8px;
+  font-family: var(--font-family-heading);
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-page-ink);
+}
+
+.stars {
+  display: flex;
+  gap: 4px;
+}
+
+.star {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 32px;
+  line-height: 1;
+  color: #d1d5db;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.starActive {
+  color: #f5af00;
+}
+
+.star:focus-visible {
+  outline: 2px solid var(--color-page-link);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.star:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: var(--font-family-heading);
+  font-size: 13px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-page-ink);
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid #e0e5eb;
+  border-radius: 10px;
+  background-color: #ffffff;
+  font-family: var(--font-family-heading);
+  font-size: 14px;
+  color: var(--color-page-ink);
+  resize: vertical;
+}
+
+.field input:focus-visible,
+.field textarea:focus-visible {
+  outline: none;
+  border-color: var(--color-page-link);
+  box-shadow: 0 0 0 3px rgba(26, 102, 229, 0.12);
+}
+
+.field input:disabled,
+.field textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background-color: #fef2f2;
+  font-family: var(--font-family-heading);
+  font-size: 13px;
+  color: #b91c1c;
+}
+
+.note {
+  margin: 0;
+  font-family: var(--font-family-heading);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-page-muted);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.cancel,
+.submit {
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 9px;
+  font-family: var(--font-family-heading);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.cancel {
+  border: 1px solid #e0e5eb;
+  background-color: #ffffff;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-page-ink);
+}
+
+.submit {
+  border: 1px solid var(--color-page-link);
+  background-color: var(--color-page-link);
+  font-weight: var(--font-weight-semibold);
+  color: #ffffff;
+}
+
+.cancel:disabled,
+.submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 479px) {
+  .dialog {
+    padding: 24px 18px;
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .cancel,
+  .submit {
+    width: 100%;
+  }
+}

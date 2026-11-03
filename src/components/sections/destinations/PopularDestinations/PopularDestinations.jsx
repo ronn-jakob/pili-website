@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import styles from './PopularDestinations.module.css';
 import { Link } from 'react-router-dom';
 import Container from '../../../ui/Container/Container';
-import WishlistButton from '../../../ui/WishlistButton/WishlistButton';
 import palawanImage from '../../../../Images/destinations/palawan.png';
 import siargaoImage from '../../../../Images/destinations/siargao.png';
 import boholImage from '../../../../Images/destinations/bohol.png';
@@ -102,7 +101,6 @@ function DestinationCard({ destination }) {
     <article className={`${styles.card} ${styles[variant]}`} id={id}>
       <div className={styles.photoWrap}>
         <img src={image} alt="" className={styles.photo} />
-        <WishlistButton itemName={name} raised className={styles.heart} />
       </div>
 
       <div className={styles.body}>

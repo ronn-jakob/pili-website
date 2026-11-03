@@ -1,10 +1,10 @@
 import { adminStats } from '../../../../data/adminDashboard';
 import styles from './AdminStatCards.module.css';
 
-function AdminStatCards() {
+function AdminStatCards({ stats = adminStats }) {
   return (
     <section className={styles.grid} aria-label="Platform statistics">
-      {adminStats.map((stat) => (
+      {stats.map((stat) => (
         <article
           key={stat.id}
           className={`${styles.card} ${styles[stat.tone]}`}

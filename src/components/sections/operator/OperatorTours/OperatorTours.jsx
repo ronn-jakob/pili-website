@@ -1,7 +1,7 @@
 import { operatorTours } from '../../../../data/operatorDashboard';
 import styles from './OperatorTours.module.css';
 
-function OperatorTours() {
+function OperatorTours({ tours = operatorTours }) {
   return (
     <section className={styles.section} aria-labelledby="live-tours-title">
       <div className={styles.heading}>
@@ -12,22 +12,26 @@ function OperatorTours() {
       </div>
 
       <div className={styles.grid}>
-        {operatorTours.map((tour) => (
-          <article key={tour.id} className={styles.card}>
-            <div
-              className={styles.photo}
-              style={{ background: tour.background }}
-              aria-hidden="true"
-            />
-            <div className={styles.body}>
-              <h3 className={styles.tourTitle}>{tour.title}</h3>
-              <p className={styles.seats}>{tour.seats}</p>
-              <span className={`${styles.badge} ${styles[tour.tone]}`}>
-                {tour.status}
-              </span>
-            </div>
-          </article>
-        ))}
+        {tours.length === 0 ? (
+          <p className={styles.subtitle}>No published tours yet.</p>
+        ) : (
+          tours.map((tour) => (
+            <article key={tour.id} className={styles.card}>
+              <div
+                className={styles.photo}
+                style={{ background: tour.background }}
+                aria-hidden="true"
+              />
+              <div className={styles.body}>
+                <h3 className={styles.tourTitle}>{tour.title}</h3>
+                <p className={styles.seats}>{tour.seats}</p>
+                <span className={`${styles.badge} ${styles[tour.tone]}`}>
+                  {tour.status}
+                </span>
+              </div>
+            </article>
+          ))
+        )}
       </div>
     </section>
   );

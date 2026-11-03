@@ -126,8 +126,34 @@ function LogoutIcon() {
   );
 }
 
+function StarIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9L12 3Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 const items = [
   { id: 'bookings', label: 'My Bookings', href: '/bookings', icon: <CalendarIcon /> },
+  {
+    id: 'reviews',
+    label: 'Needs Review',
+    href: '/reviews',
+    icon: <StarIcon />,
+  },
   {
     id: 'notifications',
     label: 'Notifications',
@@ -137,10 +163,24 @@ const items = [
   { id: 'settings', label: 'Settings', href: '/settings', icon: <GearIcon /> },
 ];
 
-function ProfileMenu({ user, onLogout }) {
+const operatorItem = {
+  id: 'operator',
+  label: 'Operator dashboard',
+  href: '/operator',
+  icon: <GearIcon />,
+};
+
+function ProfileMenu({
+  user,
+  notificationCount = 0,
+  reviewCount = 0,
+  isOperator = false,
+  onLogout,
+}) {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef(null);
   const buttonRef = useRef(null);
+  const menuItems = isOperator ? [...items, operatorItem] : items;
 
   useEffect(() => {
     if (!open) {
@@ -181,7 +221,11 @@ function ProfileMenu({ user, onLogout }) {
         aria-controls="profile-menu"
         onClick={() => setOpen((current) => !current)}
       >
-        <PersonIcon />
+        {user?.photo ? (
+          <img src={user.photo} alt="" className={styles.avatarImage} />
+        ) : (
+          <PersonIcon />
+        )}
       </button>
 
       {open && (
@@ -191,18 +235,32 @@ function ProfileMenu({ user, onLogout }) {
           role="menu"
           aria-label="Profile menu"
         >
-          {items.map((item) => (
-            <Link
-              key={item.id}
-              to={item.href}
-              role="menuitem"
-              className={styles.item}
-              onClick={() => setOpen(false)}
-            >
-              <span className={styles.icon}>{item.icon}</span>
-              {item.label}
-            </Link>
-          ))}
+          {menuItems.map((item) => {
+            const badgeCount =
+              item.id === 'notifications'
+                ? notificationCount
+                : item.id === 'reviews'
+                  ? reviewCount
+                  : 0;
+
+            return (
+              <Link
+                key={item.id}
+                to={item.href}
+                role="menuitem"
+                className={styles.item}
+                onClick={() => setOpen(false)}
+              >
+                <span className={styles.icon}>{item.icon}</span>
+                {item.label}
+                {badgeCount > 0 && (
+                  <span className={styles.notificationBadge}>
+                    {badgeCount > 9 ? '9+' : badgeCount}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
 
           <div className={styles.divider} />
 

@@ -1,11 +1,20 @@
 import { Link } from 'react-router-dom';
 import { formatLongDate, parseDate } from '../../../../utils/booking';
+import {
+  normalizeTravelers,
+  travelerLabel,
+} from '../../../../utils/travelers';
 import styles from './BookingReviewDetails.module.css';
 
 function BookingReviewDetails({ pkg, dateValue, travelers, details }) {
   const date = parseDate(dateValue);
   const name = `${details.firstName} ${details.lastName}`.trim() || '—';
-  const editState = { date: dateValue, travelers, details };
+  const normalizedTravelers = normalizeTravelers(travelers);
+  const editState = {
+    date: dateValue,
+    travelers: normalizedTravelers,
+    details,
+  };
 
   return (
     <div className={styles.wrapper}>
@@ -28,9 +37,7 @@ function BookingReviewDetails({ pkg, dateValue, travelers, details }) {
           </div>
           <div className={styles.row}>
             <dt>Travelers</dt>
-            <dd>
-              {travelers} {travelers === 1 ? 'person' : 'persons'}
-            </dd>
+            <dd>{travelerLabel(normalizedTravelers)}</dd>
           </div>
           <div className={styles.row}>
             <dt>Pickup</dt>

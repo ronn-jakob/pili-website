@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import styles from './Hero.module.css';
 import Container from '../../../ui/Container/Container';
 import heroPhoto from '../../../../Images/hero-photo.jpg';
@@ -11,9 +12,20 @@ const heroSlides = [
 ];
 
 function Hero() {
+  const navigate = useNavigate();
+
   const handleSubmit = (event) => {
-    // Search will be wired to real data once the backend exists.
     event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const destination = String(
+      formData.get('destination') ?? '',
+    ).trim();
+
+    navigate(
+      destination
+        ? `/packages?search=${encodeURIComponent(destination)}`
+        : '/packages',
+    );
   };
 
   return (

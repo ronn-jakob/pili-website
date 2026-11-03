@@ -4,6 +4,12 @@ import {
   getCancellationDate,
   parseDate,
 } from '../../../../utils/booking';
+import {
+  normalizeTravelers,
+  travelerLabel,
+  travelerLineItems,
+} from '../../../../utils/travelers';
+import { calculatePackageAmounts } from '../../../../utils/pricing';
 import styles from './BookingReviewSummary.module.css';
 
 function BookingReviewSummary({ pkg, dateValue, travelers, details }) {
@@ -12,8 +18,13 @@ function BookingReviewSummary({ pkg, dateValue, travelers, details }) {
     date,
     pkg.cancellationHours,
   );
-  const subtotal = pkg.priceValue * travelers;
-  const total = subtotal + pkg.serviceFee;
+  const normalizedTravelers = normalizeTravelers(travelers);
+  const pricing = calculatePackageAmounts(
+    pkg,
+    normalizedTravelers,
+    dateValue,
+  );
+  const lineItems = travelerLineItems(pkg, normalizedTravelers);
 
   return (
     <aside className={styles.sidebar} aria-label="Order summary">
@@ -27,24 +38,30 @@ function BookingReviewSummary({ pkg, dateValue, travelers, details }) {
           </div>
           <div className={styles.row}>
             <dt>Travelers</dt>
-            <dd>
-              {travelers} {travelers === 1 ? 'person' : 'persons'}
-            </dd>
+            <dd>{travelerLabel(normalizedTravelers)}</dd>
           </div>
         </dl>
 
         <div className={styles.divider} />
 
         <dl className={styles.rows}>
-          <div className={styles.row}>
-            <dt>Ticket price</dt>
-            <dd>
-              {formatMoney(pkg.priceValue, pkg.currency)} × {travelers}
-            </dd>
-          </div>
+          {lineItems.map((item) => (
+            <div key={item.key} className={styles.row}>
+              <dt>
+                {item.label} × {item.count}
+              </dt>
+              <dd>{formatMoney(item.amount, pkg.currency)}</dd>
+            </div>
+          ))}
+          {pricing.discount > 0 && (
+            <div className={styles.row}>
+              <dt>Discount</dt>
+              <dd>-{formatMoney(pricing.discount, pkg.currency)}</dd>
+            </div>
+          )}
           <div className={styles.row}>
             <dt>Service fee</dt>
-            <dd>{formatMoney(pkg.serviceFee, pkg.currency)}</dd>
+            <dd>{formatMoney(pricing.fees, pkg.currency)}</dd>
           </div>
           <div className={styles.row}>
             <dt>Promo</dt>
@@ -56,7 +73,7 @@ function BookingReviewSummary({ pkg, dateValue, travelers, details }) {
 
         <div className={styles.total}>
           <span>Total due</span>
-          <strong>{formatMoney(total, pkg.currency)}</strong>
+          <strong>{formatMoney(pricing.total, pkg.currency)}</strong>
         </div>
       </div>
 

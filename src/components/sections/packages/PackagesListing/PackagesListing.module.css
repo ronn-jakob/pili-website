@@ -141,6 +141,42 @@
   outline-offset: 2px;
 }
 
+.dateInputs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dateField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dateLabel {
+  font-family: var(--font-family-heading);
+  font-size: 11px;
+  font-weight: var(--font-weight-medium);
+  color: #777777;
+}
+
+.dateInput {
+  width: 100%;
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  background-color: #ffffff;
+  font-family: var(--font-family-heading);
+  font-size: 12px;
+  color: var(--color-package-ink);
+}
+
+.dateInput:focus-visible {
+  outline: 2px solid var(--color-package-blue);
+  outline-offset: 2px;
+}
+
 .applyButton {
   align-self: flex-start;
   min-width: 111px;

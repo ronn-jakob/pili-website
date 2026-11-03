@@ -177,6 +177,23 @@
   outline-offset: 2px;
 }
 
+.input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.formError {
+  margin: 0;
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+  color: var(--color-error);
+}
+
+.loginForm .formError {
+  margin-top: 12px;
+}
+
 .fieldIcon {
   position: absolute;
   top: 50%;
@@ -233,13 +250,18 @@
   transition: filter var(--transition-fast);
 }
 
-.primaryButton:hover {
+.primaryButton:hover:not(:disabled) {
   filter: brightness(1.05);
 }
 
 .primaryButton:focus-visible {
   outline: 2px solid var(--color-text-strong);
   outline-offset: 2px;
+}
+
+.primaryButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .secondaryButton {

@@ -24,4 +24,9 @@ export const profileNav = [
   { id: 'travel-preferences', label: 'Travel preferences', available: false },
   { id: 'login-security', label: 'Login & security', available: true },
   { id: 'notifications', label: 'Notifications', available: false },
+  {
+    id: 'operator-application',
+    label: 'Become a tour operator',
+    available: true,
+  },
 ];

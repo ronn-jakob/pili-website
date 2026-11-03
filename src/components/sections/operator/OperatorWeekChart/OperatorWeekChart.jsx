@@ -1,8 +1,11 @@
 import { operatorWeek } from '../../../../data/operatorDashboard';
 import styles from './OperatorWeekChart.module.css';
 
-function OperatorWeekChart() {
-  const max = Math.max(...operatorWeek.map((day) => day.value));
+function OperatorWeekChart({
+  week = operatorWeek,
+  caption = 'Peak day: Saturday · 24 bookings',
+}) {
+  const max = Math.max(1, ...week.map((day) => day.value));
 
   return (
     <section className={styles.card} aria-labelledby="operator-week-title">
@@ -13,9 +16,9 @@ function OperatorWeekChart() {
       <div
         className={styles.chart}
         role="img"
-        aria-label="Bookings for the current week, peaking on Saturday"
+        aria-label="Bookings for the current week"
       >
-        {operatorWeek.map((day, index) => (
+        {week.map((day, index) => (
           <div key={`${day.day}-${index}`} className={styles.column}>
             <div className={styles.barArea}>
               <span
@@ -31,7 +34,7 @@ function OperatorWeekChart() {
         ))}
       </div>
 
-      <p className={styles.caption}>Peak day: Saturday · 24 bookings</p>
+      <p className={styles.caption}>{caption}</p>
     </section>
   );
 }

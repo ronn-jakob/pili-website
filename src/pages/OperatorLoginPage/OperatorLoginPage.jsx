@@ -9,7 +9,6 @@ import Logo from '../../components/ui/Logo/Logo';
 import PasswordToggle from '../../components/ui/PasswordToggle/PasswordToggle';
 import { auth } from '../../lib/firebase';
 import {
-  OPERATOR_EMAIL,
   isOperatorUser,
   operatorLoginErrorMessage,
 } from '../../lib/operatorAuth';
@@ -62,12 +61,6 @@ function OperatorLoginPage() {
         password,
       );
 
-      if (credential.user.email !== OPERATOR_EMAIL) {
-        await signOut(auth);
-        setError('This account does not have operator access.');
-        return;
-      }
-
       const allowed = await isOperatorUser(credential.user);
 
       if (!allowed) {
@@ -104,7 +97,7 @@ function OperatorLoginPage() {
         <p className={styles.eyebrow}>Operator console</p>
         <h1 className={styles.title}>Operator sign in</h1>
         <p className={styles.subtitle}>
-          Use the Pili operator account to access the dashboard.
+          Use an approved operator account to access the dashboard.
         </p>
 
         <form className={styles.form} onSubmit={handleSubmit} noValidate>

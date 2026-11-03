@@ -4,13 +4,25 @@ import { db } from './firebase';
 export const OPERATOR_EMAIL = 'operator@gmail.com';
 
 export async function isOperatorUser(user) {
-  if (!user || user.email !== OPERATOR_EMAIL) {
+  if (!user) {
     return false;
   }
 
   try {
     const snapshot = await getDoc(doc(db, 'operators', user.uid));
-    return snapshot.exists() && snapshot.data().role === 'operator';
+
+    if (!snapshot.exists()) {
+      return false;
+    }
+
+    const data = snapshot.data();
+    const status =
+      data.status ?? (data.role === 'operator' ? 'active' : 'inactive');
+
+    return (
+      status === 'active' &&
+      (data.role === 'operator' || !data.role)
+    );
   } catch {
     return false;
   }

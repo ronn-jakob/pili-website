@@ -31,9 +31,12 @@ function PackageFilters({
   selectedDurations,
   minBudget,
   maxBudget,
+  dateFrom,
+  dateTo,
   onToggleCategory,
   onToggleDuration,
   onBudgetChange,
+  onDateChange,
   onApply,
   onClear,
 }) {
@@ -78,6 +81,31 @@ function PackageFilters({
       </fieldset>
 
       <fieldset className={styles.group}>
+        <legend className={styles.groupTitle}>Departure date</legend>
+        <div className={styles.dateInputs}>
+          <label className={styles.dateField}>
+            <span className={styles.dateLabel}>From</span>
+            <input
+              type="date"
+              className={styles.dateInput}
+              value={dateFrom}
+              onChange={(event) => onDateChange('from', event.target.value)}
+            />
+          </label>
+          <label className={styles.dateField}>
+            <span className={styles.dateLabel}>To</span>
+            <input
+              type="date"
+              className={styles.dateInput}
+              value={dateTo}
+              min={dateFrom || undefined}
+              onChange={(event) => onDateChange('to', event.target.value)}
+            />
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset className={styles.group}>
         <legend className={styles.groupTitle}>Budget per person</legend>
         <div className={styles.budget}>
           <input
@@ -114,6 +142,7 @@ function PackageCard({ pkg }) {
       <div className={styles.photo} style={{ backgroundColor: pkg.color }}>
         <span className={styles.duration}>{pkg.duration}</span>
         <WishlistButton
+          tourId={pkg.id}
           itemName={pkg.title}
           tone="dark"
           className={styles.heart}
@@ -148,30 +177,41 @@ function PackageCard({ pkg }) {
   );
 }
 
-function PackagesListing({ packages = [], loading = false, error = '' }) {
+function PackagesListing({
+  packages = [],
+  departureDates = {},
+  loading = false,
+  error = '',
+}) {
   const categories = useMemo(
     () =>
       [...new Set(packages.map((pkg) => pkg.category).filter(Boolean))].sort(),
     [packages],
   );
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  const [selectedDurations, setSelectedDurations] = useState([]);
-  const [minBudget, setMinBudget] = useState('');
-  const [maxBudget, setMaxBudget] = useState('');
-  const [appliedFilters, setAppliedFilters] = useState({
-    categories: [],
-    durations: [],
-    min: '',
-    max: '',
-  });
-  const [sort, setSort] = useState('popular');
-  const [page, setPage] = useState(1);
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const urlSearch = (searchParams.get('search') ?? '').trim().toLowerCase();
   const urlCategory = searchParams.get('category') ?? '';
   const urlDuration = searchParams.get('duration') ?? '';
   const urlMin = searchParams.get('min') ?? '';
   const urlMax = searchParams.get('max') ?? '';
+  const urlFrom = searchParams.get('from') ?? '';
+  const urlTo = searchParams.get('to') ?? '';
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedDurations, setSelectedDurations] = useState([]);
+  const [minBudget, setMinBudget] = useState('');
+  const [maxBudget, setMaxBudget] = useState('');
+  const [dateFrom, setDateFrom] = useState(urlFrom);
+  const [dateTo, setDateTo] = useState(urlTo);
+  const [appliedFilters, setAppliedFilters] = useState({
+    categories: [],
+    durations: [],
+    min: '',
+    max: '',
+    from: urlFrom,
+    to: urlTo,
+  });
+  const [sort, setSort] = useState('popular');
+  const [page, setPage] = useState(1);
   const pageSize = 6;
 
   const toggleCategory = (category) => {
@@ -198,13 +238,42 @@ function PackagesListing({ packages = [], loading = false, error = '' }) {
     }
   };
 
+  const handleDateChange = (field, value) => {
+    if (field === 'from') {
+      setDateFrom(value);
+    } else {
+      setDateTo(value);
+    }
+  };
+
+  const syncDateParams = (from, to) => {
+    const next = new URLSearchParams(searchParams);
+
+    if (from) {
+      next.set('from', from);
+    } else {
+      next.delete('from');
+    }
+
+    if (to) {
+      next.set('to', to);
+    } else {
+      next.delete('to');
+    }
+
+    setSearchParams(next, { replace: true });
+  };
+
   const applyFilters = () => {
     setAppliedFilters({
       categories: selectedCategories,
       durations: selectedDurations,
       min: minBudget,
       max: maxBudget,
+      from: dateFrom,
+      to: dateTo,
     });
+    syncDateParams(dateFrom, dateTo);
     setPage(1);
   };
 
@@ -213,7 +282,17 @@ function PackagesListing({ packages = [], loading = false, error = '' }) {
     setSelectedDurations([]);
     setMinBudget('');
     setMaxBudget('');
-    setAppliedFilters({ categories: [], durations: [], min: '', max: '' });
+    setDateFrom('');
+    setDateTo('');
+    setAppliedFilters({
+      categories: [],
+      durations: [],
+      min: '',
+      max: '',
+      from: '',
+      to: '',
+    });
+    syncDateParams('', '');
     setPage(1);
   };
 
@@ -225,6 +304,12 @@ function PackagesListing({ packages = [], loading = false, error = '' }) {
     const urlDurationOption = durationOptions.find(
       (option) => option.label === urlDuration,
     );
+    const fromDate = appliedFilters.from
+      ? new Date(`${appliedFilters.from}T00:00:00`)
+      : null;
+    const toDate = appliedFilters.to
+      ? new Date(`${appliedFilters.to}T23:59:59.999`)
+      : null;
     const filtered = packages.filter((pkg) => {
       const matchesSearch =
         !urlSearch ||
@@ -258,6 +343,22 @@ function PackagesListing({ packages = [], loading = false, error = '' }) {
         (!appliedFilters.max ||
           (Number.isFinite(max) && pkg.priceValue <= max)) &&
         (!urlMax || (Number.isFinite(urlMaxValue) && pkg.priceValue <= urlMaxValue));
+      const tourDepartures = departureDates[pkg.id] ?? [];
+      const matchesDate =
+        (!fromDate && !toDate) ||
+        tourDepartures.some((value) => {
+          const date = value instanceof Date ? value : new Date(value);
+          const time = date.getTime();
+
+          if (!Number.isFinite(time)) {
+            return false;
+          }
+
+          return (
+            (!fromDate || time >= fromDate.getTime()) &&
+            (!toDate || time <= toDate.getTime())
+          );
+        });
 
       return (
         matchesSearch &&
@@ -266,7 +367,8 @@ function PackagesListing({ packages = [], loading = false, error = '' }) {
         matchesDuration &&
         matchesUrlDuration &&
         matchesMin &&
-        matchesMax
+        matchesMax &&
+        matchesDate
       );
     });
 
@@ -293,6 +395,7 @@ function PackagesListing({ packages = [], loading = false, error = '' }) {
     });
   }, [
     packages,
+    departureDates,
     appliedFilters,
     sort,
     urlSearch,
@@ -319,9 +422,12 @@ function PackagesListing({ packages = [], loading = false, error = '' }) {
             selectedDurations={selectedDurations}
             minBudget={minBudget}
             maxBudget={maxBudget}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
             onToggleCategory={toggleCategory}
             onToggleDuration={toggleDuration}
             onBudgetChange={handleBudgetChange}
+            onDateChange={handleDateChange}
             onApply={applyFilters}
             onClear={clearFilters}
           />

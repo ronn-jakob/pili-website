@@ -92,6 +92,45 @@
   background-color: var(--admin-border);
 }
 
+.menuLink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-family: var(--admin-font);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--admin-ink);
+  text-decoration: none;
+  transition: background-color 140ms ease;
+}
+
+.menuLink:hover {
+  background-color: #f8fafc;
+}
+
+.menuLink:focus-visible {
+  outline: 2px solid var(--admin-blue);
+  outline-offset: -2px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background-color: var(--admin-blue);
+  font-size: 10px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
 .logout {
   width: 100%;
   min-height: 38px;

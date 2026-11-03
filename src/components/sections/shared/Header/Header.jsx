@@ -1,17 +1,25 @@
 import { useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import {
+  Link,
+  NavLink,
+  useNavigate,
+  useSearchParams,
+} from 'react-router-dom';
 import styles from './Header.module.css';
 import Container from '../../../ui/Container/Container';
 import Logo from '../../../ui/Logo/Logo';
 import Button from '../../../ui/Button/Button';
 import AuthModal from '../../../ui/AuthModal/AuthModal';
 import ProfileMenu from '../ProfileMenu/ProfileMenu';
+import useTravelerAuth from '../../../../context/useTravelerAuth';
+import useReviewableBookings from '../../../../hooks/useReviewableBookings';
+import useUnreadNotifications from '../../../../hooks/useUnreadNotifications';
 
 const mainNavLinks = [
   { label: 'Home', to: '/#top' },
   { label: 'About us', to: '/#why-choose' },
   { label: 'Contacts', to: '/#contacts' },
-  { label: 'Wishlist', href: '/wishlist' },
+  { label: 'Wishlist', to: '/wishlist' },
 ];
 
 const secondaryNavLinks = [
@@ -22,26 +30,79 @@ const secondaryNavLinks = [
 
 function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [authMode, setAuthMode] = useState(null);
-  const [user, setUser] = useState(null);
+  const {
+    traveler,
+    isOperator,
+    loading,
+    login,
+    register,
+    logout,
+  } = useTravelerAuth();
+  const unreadNotifications = useUnreadNotifications(traveler?.uid);
+  const reviewable = useReviewableBookings(traveler?.uid);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const requestedAuth = searchParams.get('auth');
+  const authMode =
+    requestedAuth === 'login' || requestedAuth === 'signup'
+      ? requestedAuth
+      : null;
+  const redirectAfterAuth = searchParams.get('from') ?? '';
 
   const toggleMenu = () => setMenuOpen((prev) => !prev);
   const closeMenu = () => setMenuOpen(false);
 
   const openAuth = (mode) => {
     setMenuOpen(false);
-    setAuthMode(mode);
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('auth', mode);
+    nextParams.delete('from');
+    setSearchParams(nextParams, { replace: true });
   };
 
-  const closeAuth = () => setAuthMode(null);
+  const switchAuthMode = (mode) => {
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('auth', mode);
+    setSearchParams(nextParams, { replace: true });
+  };
 
-  const handleLogin = () => {
-    setUser({ name: 'Pili Traveler' });
+  const closeAuth = () => {
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('auth');
+    nextParams.delete('from');
+    setSearchParams(nextParams, { replace: true });
+  };
+
+  const handleLogin = async (credentials) => {
+    await login(credentials);
+    const target = redirectAfterAuth;
     closeAuth();
+    closeMenu();
+
+    if (target) {
+      navigate(target, { replace: true });
+    }
+  };
+
+  const handleSignup = async (details) => {
+    await register(details);
+    const target = redirectAfterAuth;
+    closeAuth();
+    closeMenu();
+
+    if (target) {
+      navigate(target, { replace: true });
+    }
+  };
+
+  const handleLogout = async () => {
+    await logout();
     closeMenu();
   };
 
-  const handleLogout = () => setUser(null);
+  const travelerName =
+    [traveler?.firstName, traveler?.lastName].filter(Boolean).join(' ') ||
+    traveler?.email;
 
   return (
     <header className={styles.header}>
@@ -73,17 +134,27 @@ function Header() {
 
             <div
               className={`${styles.authActions}${
-                user ? ` ${styles.authActionsSignedIn}` : ''
+                traveler ? ` ${styles.authActionsSignedIn}` : ''
               }`}
             >
-              {user ? (
-                <ProfileMenu user={user} onLogout={handleLogout} />
+              {traveler ? (
+                <ProfileMenu
+                  user={{
+                    name: travelerName,
+                    photo: traveler?.photoURL ?? '',
+                  }}
+                  notificationCount={unreadNotifications}
+                  reviewCount={reviewable.count}
+                  isOperator={isOperator}
+                  onLogout={handleLogout}
+                />
               ) : (
                 <>
                   <button
                     type="button"
                     className={styles.signUpLink}
                     onClick={() => openAuth('signup')}
+                    disabled={loading}
                   >
                     Sign up
                   </button>
@@ -91,6 +162,7 @@ function Header() {
                     variant="primary"
                     size="medium"
                     onClick={() => openAuth('login')}
+                    disabled={loading}
                   >
                     Log in
                   </Button>
@@ -247,7 +319,7 @@ function Header() {
                 </ul>
               </nav>
 
-              {!user && (
+              {!traveler && (
                 <>
                   <div className={styles.mobileMenuDivider} />
 
@@ -256,6 +328,7 @@ function Header() {
                       type="button"
                       className={styles.mobileSignUpLink}
                       onClick={() => openAuth('signup')}
+                      disabled={loading}
                     >
                       Sign up
                     </button>
@@ -264,6 +337,7 @@ function Header() {
                       size="large"
                       className={styles.mobileLoginButton}
                       onClick={() => openAuth('login')}
+                      disabled={loading}
                     >
                       Login
                     </Button>
@@ -278,8 +352,9 @@ function Header() {
       <AuthModal
         mode={authMode}
         onClose={closeAuth}
-        onSwitchMode={setAuthMode}
+        onSwitchMode={switchAuthMode}
         onLogin={handleLogin}
+        onSignup={handleSignup}
       />
     </header>
   );

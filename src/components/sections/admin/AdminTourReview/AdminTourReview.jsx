@@ -173,8 +173,27 @@ function AdminTourReview({ tour, onClose, onModerated }) {
             <span>
               Group discount <strong>{tour.groupDiscount}%</strong>
             </span>
+            <span>
+              Early bird{' '}
+              <strong>
+                {tour.earlyBirdPercent}% / {tour.earlyBirdDays}d
+              </strong>
+            </span>
           </div>
         </section>
+
+        {tour.coverImage && (
+          <section className={styles.section} aria-labelledby="review-cover">
+            <h3 id="review-cover" className={styles.sectionTitle}>
+              Website image
+            </h3>
+            <img
+              src={tour.coverImage}
+              alt="Tour website cover"
+              className={styles.coverImage}
+            />
+          </section>
+        )}
 
         {tour.photos.length > 0 && (
           <section className={styles.section} aria-labelledby="review-photos">
@@ -252,12 +271,6 @@ function AdminTourReview({ tour, onClose, onModerated }) {
             </span>
             <span className={tour.discounts.group ? styles.chipOn : styles.chipOff}>
               Group
-            </span>
-            <span className={tour.discounts.student ? styles.chipOn : styles.chipOff}>
-              Student
-            </span>
-            <span className={tour.discounts.senior ? styles.chipOn : styles.chipOff}>
-              Senior / PWD
             </span>
             <span className={styles.chipNeutral}>{tour.taxesAndFees}</span>
           </div>

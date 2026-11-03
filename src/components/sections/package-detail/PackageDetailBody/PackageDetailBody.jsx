@@ -2,6 +2,14 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ItineraryMapModal from '../../../ui/ItineraryMapModal/ItineraryMapModal';
 import { formatMoney } from '../../../../utils/booking';
+import {
+  clampTravelersToSlots,
+  DEFAULT_TRAVELERS,
+  MAX_TRAVELERS,
+  travelerLineItems,
+  travelerSubtotal,
+  travelerTotal,
+} from '../../../../utils/travelers';
 import styles from './PackageDetailBody.module.css';
 
 const tabs = [
@@ -37,14 +45,18 @@ function formatDepartureLabel(departure) {
 
 function PackageDetailBody({ pkg, itinerary, departures = [], bookable = true }) {
   const navigate = useNavigate();
-  const [travelers, setTravelers] = useState(2);
+  const [travelers, setTravelers] = useState({
+    ...DEFAULT_TRAVELERS,
+  });
   const [date, setDate] = useState('2026-11-12');
   const [selectedDepartureId, setSelectedDepartureId] = useState('');
   const [activeTab, setActiveTab] = useState('inclusions');
   const [activeMapDay, setActiveMapDay] = useState(null);
 
-  const subtotal = pkg.priceValue * travelers;
+  const subtotal = travelerSubtotal(pkg, travelers);
   const total = subtotal + pkg.serviceFee;
+  const travelerRows = travelerLineItems(pkg, travelers);
+  const totalTravelers = travelerTotal(travelers);
   const days = itinerary ?? pkg.itinerary;
   const selectedDeparture =
     departures.find((departure) => departure.id === selectedDepartureId) ??
@@ -59,6 +71,53 @@ function PackageDetailBody({ pkg, itinerary, departures = [], bookable = true })
         selectedDeparture.capacity - selectedDeparture.bookedTravelers,
       )
     : 0;
+  const maxTravelers = selectedDeparture
+    ? Math.min(remainingSlots, MAX_TRAVELERS)
+    : MAX_TRAVELERS;
+  const hasEnoughSlots =
+    !selectedDeparture || totalTravelers <= maxTravelers;
+
+  const updateTraveler = (field, delta) => {
+    setTravelers((current) => {
+      const minimum = field === 'adults' ? 1 : 0;
+      const nextCount = current[field] + delta;
+
+      if (nextCount < minimum) {
+        return current;
+      }
+
+      const nextTotal =
+        current.total - current[field] + nextCount;
+
+      if (nextTotal > maxTravelers) {
+        return current;
+      }
+
+      return {
+        ...current,
+        [field]: nextCount,
+        total: nextTotal,
+      };
+    });
+  };
+
+  const handleDepartureChange = (departureId) => {
+    setSelectedDepartureId(departureId);
+
+    const departure = departures.find(
+      (item) => item.id === departureId,
+    );
+    const slots = departure
+      ? Math.max(
+          0,
+          departure.capacity - departure.bookedTravelers,
+        )
+      : MAX_TRAVELERS;
+
+    setTravelers((current) =>
+      clampTravelersToSlots(current, slots),
+    );
+  };
 
   return (
     <section className={styles.section}>
@@ -162,9 +221,10 @@ function PackageDetailBody({ pkg, itinerary, departures = [], bookable = true })
                 className={styles.dateInput}
                 value={selectedDeparture?.id ?? ''}
                 onChange={(event) =>
-                  setSelectedDepartureId(event.target.value)
+                  handleDepartureChange(event.target.value)
                 }
               >
+                <option value="">Choose a departure</option>
                 {departures.map((departure) => {
                   const slots = Math.max(
                     0,
@@ -201,40 +261,128 @@ function PackageDetailBody({ pkg, itinerary, departures = [], bookable = true })
             </>
           )}
 
-          <p className={styles.fieldLabel}>Number of travelers</p>
-          <div className={styles.counter}>
-            <button
-              type="button"
-              className={styles.counterButton}
-              aria-label="Remove traveler"
-              disabled={travelers <= 1}
-              onClick={() => setTravelers((count) => Math.max(1, count - 1))}
-            >
-              −
-            </button>
-            <span className={styles.count} aria-live="polite">
-              {travelers}
-            </span>
-            <button
-              type="button"
-              className={styles.counterButton}
-              aria-label="Add traveler"
-              disabled={travelers >= 8}
-              onClick={() => setTravelers((count) => Math.min(8, count + 1))}
-            >
-              +
-            </button>
+          <p className={styles.fieldLabel}>Travelers</p>
+          <div className={styles.travelerGroup}>
+            <div className={styles.travelerRow}>
+              <div className={styles.travelerInfo}>
+                <span className={styles.travelerLabel}>Adults</span>
+                <span className={styles.travelerHint}>Age 12+</span>
+              </div>
+              <div className={styles.counter}>
+                <button
+                  type="button"
+                  className={styles.counterButton}
+                  aria-label="Remove adult"
+                  disabled={travelers.adults <= 1}
+                  onClick={() => updateTraveler('adults', -1)}
+                >
+                  −
+                </button>
+                <span className={styles.count} aria-live="polite">
+                  {travelers.adults}
+                </span>
+                <button
+                  type="button"
+                  className={styles.counterButton}
+                  aria-label="Add adult"
+                  disabled={
+                    maxTravelers <= 0 ||
+                    travelers.total >= maxTravelers
+                  }
+                  onClick={() => updateTraveler('adults', 1)}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            <div className={styles.travelerRow}>
+              <div className={styles.travelerInfo}>
+                <span className={styles.travelerLabel}>Children</span>
+                <span className={styles.travelerHint}>Age 3–11</span>
+              </div>
+              <div className={styles.counter}>
+                <button
+                  type="button"
+                  className={styles.counterButton}
+                  aria-label="Remove child"
+                  disabled={travelers.children <= 0}
+                  onClick={() => updateTraveler('children', -1)}
+                >
+                  −
+                </button>
+                <span className={styles.count} aria-live="polite">
+                  {travelers.children}
+                </span>
+                <button
+                  type="button"
+                  className={styles.counterButton}
+                  aria-label="Add child"
+                  disabled={
+                    maxTravelers <= 0 ||
+                    travelers.total >= maxTravelers
+                  }
+                  onClick={() => updateTraveler('children', 1)}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            <div className={styles.travelerRow}>
+              <div className={styles.travelerInfo}>
+                <span className={styles.travelerLabel}>Infants</span>
+                <span className={styles.travelerHint}>Under 3</span>
+              </div>
+              <div className={styles.counter}>
+                <button
+                  type="button"
+                  className={styles.counterButton}
+                  aria-label="Remove infant"
+                  disabled={travelers.infants <= 0}
+                  onClick={() => updateTraveler('infants', -1)}
+                >
+                  −
+                </button>
+                <span className={styles.count} aria-live="polite">
+                  {travelers.infants}
+                </span>
+                <button
+                  type="button"
+                  className={styles.counterButton}
+                  aria-label="Add infant"
+                  disabled={
+                    maxTravelers <= 0 ||
+                    travelers.total >= maxTravelers
+                  }
+                  onClick={() => updateTraveler('infants', 1)}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            <p className={styles.travelerTotal}>
+              {maxTravelers <= 0
+                ? 'No slots available for this departure.'
+                : totalTravelers > maxTravelers
+                  ? `Only ${maxTravelers} slots available. Reduce travelers to continue.`
+                  : `Total: ${totalTravelers} of ${maxTravelers} available ${
+                      maxTravelers === 1 ? 'slot' : 'slots'
+                    }`}
+            </p>
           </div>
 
           <p className={styles.fieldLabel}>Price Summary</p>
           <div className={styles.summary}>
-            <div className={styles.summaryRow}>
-              <span>
-                {formatMoney(pkg.priceValue, pkg.currency)} × {travelers}{' '}
-                travelers
-              </span>
-              <span>{formatMoney(subtotal, pkg.currency)}</span>
-            </div>
+            {travelerRows.map((row) => (
+              <div key={row.key} className={styles.summaryRow}>
+                <span>
+                  {row.label} × {row.count}
+                </span>
+                <span>{formatMoney(row.amount, pkg.currency)}</span>
+              </div>
+            ))}
             <div className={styles.summaryRow}>
               <span>Service fee</span>
               <span>{formatMoney(pkg.serviceFee, pkg.currency)}</span>
@@ -248,7 +396,7 @@ function PackageDetailBody({ pkg, itinerary, departures = [], bookable = true })
             <strong>{formatMoney(total, pkg.currency)}</strong>
           </div>
 
-          {bookable ? (
+          {bookable && selectedDeparture && hasEnoughSlots ? (
             <button
               type="button"
               className={styles.bookButton}
@@ -257,7 +405,7 @@ function PackageDetailBody({ pkg, itinerary, departures = [], bookable = true })
                   state: {
                     date: dateValue,
                     travelers,
-                    departureId: selectedDeparture?.id,
+                    departureId: selectedDeparture.id,
                   },
                 })
               }
@@ -266,7 +414,15 @@ function PackageDetailBody({ pkg, itinerary, departures = [], bookable = true })
             </button>
           ) : (
             <p className={styles.comingSoon}>
-              Online booking for this tour is coming soon.
+              {bookable
+                ? selectedDeparture
+                  ? maxTravelers <= 0
+                    ? 'No slots available for this departure.'
+                    : `Only ${maxTravelers} slots available. Reduce travelers to continue.`
+                  : departures.length > 0
+                    ? 'Choose an available departure to continue.'
+                    : 'No upcoming departures are available yet.'
+                : 'Online booking for this tour is coming soon.'}
             </p>
           )}
           <p className={styles.cancel}>

@@ -1,0 +1,14 @@
+.page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  padding: 80px 24px;
+}
+
+.message {
+  margin: 0;
+  font-family: var(--font-family-heading);
+  font-size: 16px;
+  color: var(--color-page-muted);
+}

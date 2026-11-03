@@ -4,6 +4,7 @@ import OperatorDepartureForm from '../../components/sections/operator/OperatorDe
 import { useOperatorTours } from '../../context/useOperatorTours';
 import {
   cancelDeparture,
+  completeDeparture,
   departureErrorMessage,
   getDeparturesForTour,
 } from '../../lib/departures';
@@ -59,6 +60,7 @@ function OperatorDeparturesPage() {
   const [cancelling, setCancelling] = useState(null);
   const [cancelReason, setCancelReason] = useState('');
   const [cancellingSaving, setCancellingSaving] = useState(false);
+  const [completingId, setCompletingId] = useState('');
 
   const loadDepartures = async () => {
     setLoading(true);
@@ -157,6 +159,28 @@ function OperatorDeparturesPage() {
       setError(departureErrorMessage(cancelError));
     } finally {
       setCancellingSaving(false);
+    }
+  };
+
+  const handleComplete = async (departure) => {
+    if (
+      !window.confirm(
+        'Mark this departure as completed? Confirmed bookings will become completed and travelers can then write a review.',
+      )
+    ) {
+      return;
+    }
+
+    setCompletingId(departure.id);
+    setError('');
+
+    try {
+      await completeDeparture(departure.id);
+      await loadDepartures();
+    } catch (completeError) {
+      setError(departureErrorMessage(completeError));
+    } finally {
+      setCompletingId('');
     }
   };
 
@@ -339,6 +363,19 @@ function OperatorDeparturesPage() {
                             }}
                           >
                             Cancel
+                          </button>
+                        )}
+                        {(departure.status === DEPARTURE_STATUS.scheduled ||
+                          departure.status === DEPARTURE_STATUS.full) && (
+                          <button
+                            type="button"
+                            className={styles.complete}
+                            disabled={completingId === departure.id}
+                            onClick={() => handleComplete(departure)}
+                          >
+                            {completingId === departure.id
+                              ? 'Completing…'
+                              : 'Complete'}
                           </button>
                         )}
                         {!canEdit && !canCancel && '—'}

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import styles from './AuthModal.module.css';
 import Logo from '../Logo/Logo';
 import PasswordToggle from '../PasswordToggle/PasswordToggle';
+import { travelerAuthErrorMessage } from '../../../lib/travelerAuth';
 
 const FOCUSABLE_SELECTOR = [
   'a[href]',
@@ -164,7 +165,16 @@ function PhoneIcon() {
   );
 }
 
-function Field({ icon, name, placeholder, type = 'text', autoComplete }) {
+function Field({
+  icon,
+  name,
+  placeholder,
+  type = 'text',
+  autoComplete,
+  required = false,
+  disabled = false,
+  minLength,
+}) {
   const [visible, setVisible] = useState(false);
   const isPassword = type === 'password';
 
@@ -180,6 +190,9 @@ function Field({ icon, name, placeholder, type = 'text', autoComplete }) {
         name={name}
         placeholder={placeholder}
         autoComplete={autoComplete}
+        required={required}
+        disabled={disabled}
+        minLength={minLength}
       />
       {isPassword && (
         <PasswordToggle
@@ -203,14 +216,44 @@ function Terms() {
 }
 
 function LoginBody({ onSwitchMode, onLogin }) {
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (submitting) {
+      return;
+    }
+
+    const formData = new FormData(event.currentTarget);
+    const email = String(formData.get('email') ?? '').trim();
+    const password = String(formData.get('password') ?? '');
+
+    if (!email || !password) {
+      setError('Enter your email and password.');
+      return;
+    }
+
+    setError('');
+    setSubmitting(true);
+
+    try {
+      await onLogin({ email, password });
+    } catch (loginError) {
+      setError(travelerAuthErrorMessage(loginError.code));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <>
       <form
         className={styles.loginForm}
-        onSubmit={(event) => {
-          event.preventDefault();
-          onLogin?.();
-        }}
+        onSubmit={handleSubmit}
+        onInput={() => setError('')}
+        aria-busy={submitting}
         noValidate
       >
         <Field
@@ -219,6 +262,8 @@ function LoginBody({ onSwitchMode, onLogin }) {
           placeholder="Email address"
           type="email"
           autoComplete="email"
+          required
+          disabled={submitting}
         />
         <div className={styles.fieldSpaced}>
           <Field
@@ -227,6 +272,8 @@ function LoginBody({ onSwitchMode, onLogin }) {
             placeholder="Password"
             type="password"
             autoComplete="current-password"
+            required
+            disabled={submitting}
           />
         </div>
 
@@ -236,11 +283,18 @@ function LoginBody({ onSwitchMode, onLogin }) {
           </a>
         </div>
 
+        {error && (
+          <p className={styles.formError} role="alert">
+            {error}
+          </p>
+        )}
+
         <button
           type="submit"
           className={`${styles.primaryButton} ${styles.loginSubmit}`}
+          disabled={submitting}
         >
-          Login
+          {submitting ? 'Logging in…' : 'Login'}
         </button>
       </form>
 
@@ -263,14 +317,70 @@ function LoginBody({ onSwitchMode, onLogin }) {
   );
 }
 
-function SignUpBody({ onSwitchMode }) {
+function SignUpBody({ onSwitchMode, onSignup }) {
   const personalId = useId();
   const accountId = useId();
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (submitting) {
+      return;
+    }
+
+    const formData = new FormData(event.currentTarget);
+    const firstName = String(formData.get('firstName') ?? '').trim();
+    const lastName = String(formData.get('lastName') ?? '').trim();
+    const address = String(formData.get('address') ?? '').trim();
+    const phone = String(formData.get('phone') ?? '').trim();
+    const email = String(formData.get('email') ?? '').trim();
+    const password = String(formData.get('password') ?? '');
+    const confirmPassword = String(
+      formData.get('confirmPassword') ?? '',
+    );
+
+    if (!firstName || !lastName || !email || !password) {
+      setError('Complete your name, email, and password fields.');
+      return;
+    }
+
+    if (password.length < 8) {
+      setError('Use a password with at least 8 characters.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
+    setError('');
+    setSubmitting(true);
+
+    try {
+      await onSignup({
+        firstName,
+        lastName,
+        address,
+        phone,
+        email,
+        password,
+      });
+    } catch (signupError) {
+      setError(travelerAuthErrorMessage(signupError.code));
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <form
       className={styles.signupForm}
-      onSubmit={(event) => event.preventDefault()}
+      onSubmit={handleSubmit}
+      onInput={() => setError('')}
+      aria-busy={submitting}
       noValidate
     >
       <div className={styles.signupColumns}>
@@ -285,18 +395,23 @@ function SignUpBody({ onSwitchMode }) {
               name="firstName"
               placeholder="First Name"
               autoComplete="given-name"
+              required
+              disabled={submitting}
             />
             <Field
               icon={<PersonIcon />}
               name="lastName"
               placeholder="Last Name"
               autoComplete="family-name"
+              required
+              disabled={submitting}
             />
             <Field
               icon={<HouseIcon />}
               name="address"
               placeholder="Address"
               autoComplete="street-address"
+              disabled={submitting}
             />
             <Field
               icon={<PhoneIcon />}
@@ -304,6 +419,7 @@ function SignUpBody({ onSwitchMode }) {
               placeholder="Phone Number"
               type="tel"
               autoComplete="tel"
+              disabled={submitting}
             />
           </div>
         </section>
@@ -320,6 +436,8 @@ function SignUpBody({ onSwitchMode }) {
               placeholder="Email address"
               type="email"
               autoComplete="email"
+              required
+              disabled={submitting}
             />
             <Field
               icon={<PasswordIcon />}
@@ -327,6 +445,9 @@ function SignUpBody({ onSwitchMode }) {
               placeholder="Password"
               type="password"
               autoComplete="new-password"
+              required
+              minLength={8}
+              disabled={submitting}
             />
             <Field
               icon={<PasswordIcon />}
@@ -334,10 +455,23 @@ function SignUpBody({ onSwitchMode }) {
               placeholder="Confirm password"
               type="password"
               autoComplete="new-password"
+              required
+              minLength={8}
+              disabled={submitting}
             />
 
-            <button type="submit" className={styles.primaryButton}>
-              Sign up
+            {error && (
+              <p className={styles.formError} role="alert">
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              className={styles.primaryButton}
+              disabled={submitting}
+            >
+              {submitting ? 'Creating account…' : 'Sign up'}
             </button>
           </div>
 
@@ -366,7 +500,7 @@ function SignUpBody({ onSwitchMode }) {
   );
 }
 
-function AuthModal({ mode, onClose, onSwitchMode, onLogin }) {
+function AuthModal({ mode, onClose, onSwitchMode, onLogin, onSignup }) {
   const dialogRef = useRef(null);
   const previouslyFocusedRef = useRef(null);
   const titleId = useId();
@@ -506,9 +640,14 @@ function AuthModal({ mode, onClose, onSwitchMode, onLogin }) {
           </h2>
 
           {isSignup ? (
-            <SignUpBody onSwitchMode={onSwitchMode} />
+            <SignUpBody
+              key={mode ?? 'closed'}
+              onSwitchMode={onSwitchMode}
+              onSignup={onSignup}
+            />
           ) : (
             <LoginBody
+              key={mode ?? 'closed'}
               onSwitchMode={onSwitchMode}
               onLogin={onLogin}
             />

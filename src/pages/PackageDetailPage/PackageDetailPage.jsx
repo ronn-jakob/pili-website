@@ -7,6 +7,7 @@ import PackageReviews from '../../components/sections/package-detail/PackageRevi
 import { getPackageById } from '../../data/packages';
 import { getPublicDeparturesForTour } from '../../lib/departures';
 import { mapTourToPackage } from '../../lib/publicCatalog';
+import { getPublishedReviewsForTour } from '../../lib/reviews';
 import { getPublicTourById } from '../../lib/tours';
 
 function PackageDetailPage() {
@@ -14,6 +15,7 @@ function PackageDetailPage() {
   const staticPkg = getPackageById(packageId);
   const [firestoreTour, setFirestoreTour] = useState(null);
   const [departures, setDepartures] = useState([]);
+  const [reviews, setReviews] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -45,6 +47,18 @@ function PackageDetailPage() {
       .catch(() => {
         if (active) {
           setDepartures([]);
+        }
+      });
+
+    getPublishedReviewsForTour(packageId)
+      .then((items) => {
+        if (active) {
+          setReviews(items);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setReviews([]);
         }
       });
 
@@ -113,10 +127,10 @@ function PackageDetailPage() {
         pkg={displayPkg}
         itinerary={itinerary}
         departures={departures}
-        bookable={Boolean(staticPkg)}
+        bookable={Number(displayPkg.priceValue) > 0}
       />
       <PackageGallery pkg={displayPkg} />
-      <PackageReviews pkg={displayPkg} />
+      <PackageReviews pkg={displayPkg} reviews={reviews} />
     </main>
   );
 }

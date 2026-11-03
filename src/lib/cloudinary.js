@@ -157,3 +157,12 @@ export function uploadTourImage(file, onProgress) {
     prefix: 'tour',
   });
 }
+
+export function uploadAvatarImage(file, onProgress) {
+  return uploadImage(file, onProgress, {
+    preset:
+      import.meta.env.VITE_CLOUDINARY_AVATAR_UPLOAD_PRESET ||
+      import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET,
+    prefix: 'avatar',
+  });
+}

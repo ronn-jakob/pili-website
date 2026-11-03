@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { recentReservations } from '../../../../data/adminDashboard';
 import styles from './AdminRecentReservations.module.css';
 
@@ -5,9 +6,12 @@ const statusClass = {
   Confirmed: styles.confirmed,
   Pending: styles.pending,
   Cancelled: styles.cancelled,
+  Completed: styles.confirmed,
 };
 
-function AdminRecentReservations() {
+function AdminRecentReservations({
+  reservations = recentReservations,
+}) {
   return (
     <section
       className={styles.card}
@@ -22,9 +26,9 @@ function AdminRecentReservations() {
             Latest bookings across the platform
           </p>
         </div>
-        <button type="button" className={styles.viewAll}>
+        <Link to="/admin/bookings" className={styles.viewAll}>
           View all
-        </button>
+        </Link>
       </div>
 
       <div className={styles.tableWrap}>
@@ -40,7 +44,7 @@ function AdminRecentReservations() {
             </tr>
           </thead>
           <tbody>
-            {recentReservations.map((row) => (
+            {reservations.map((row) => (
               <tr key={row.id}>
                 <td className={styles.bookingId}>{row.id}</td>
                 <td>{row.traveler}</td>

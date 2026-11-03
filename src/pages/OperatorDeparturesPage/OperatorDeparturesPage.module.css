@@ -337,6 +337,7 @@
 
 .edit,
 .cancel,
+.complete,
 .confirmCancel {
   height: 30px;
   padding: 0 11px;
@@ -359,6 +360,12 @@
   color: #b91c1c;
 }
 
+.complete {
+  border: 1px solid #bfdbfe;
+  background-color: #ffffff;
+  color: #1d4ed8;
+}
+
 .confirmCancel {
   border: 1px solid #dc2626;
   background-color: #dc2626;
@@ -373,6 +380,10 @@
   background-color: #fff1f2;
 }
 
+.complete:hover {
+  background-color: #eff6ff;
+}
+
 .confirmCancel:hover {
   border-color: #b91c1c;
   background-color: #b91c1c;
@@ -380,6 +391,7 @@
 
 .edit:focus-visible,
 .cancel:focus-visible,
+.complete:focus-visible,
 .confirmCancel:focus-visible,
 .refresh:focus-visible {
   outline: 2px solid var(--admin-blue);

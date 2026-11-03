@@ -1,26 +1,37 @@
 import { useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SettingsActions from '../../components/sections/settings/SettingsActions/SettingsActions';
+import SettingsOperatorApplication from '../../components/sections/settings/SettingsOperatorApplication/SettingsOperatorApplication';
 import SettingsPhotoRow from '../../components/sections/settings/SettingsPhotoRow/SettingsPhotoRow';
 import SettingsProfileForm from '../../components/sections/settings/SettingsProfileForm/SettingsProfileForm';
 import SettingsSecurity from '../../components/sections/settings/SettingsSecurity/SettingsSecurity';
 import SettingsSidebar from '../../components/sections/settings/SettingsSidebar/SettingsSidebar';
+import useTravelerAuth from '../../context/useTravelerAuth';
 import { bookings } from '../../data/bookings';
-import { profile, profileNav } from '../../data/profile';
+import { profileNav } from '../../data/profile';
+import { uploadAvatarImage } from '../../lib/cloudinary';
+import { travelerToForm, updateTravelerProfile } from '../../lib/travelerProfile';
 import styles from './SettingsPage.module.css';
 
 function SettingsPage() {
-  const [savedProfile, setSavedProfile] = useState(profile);
-  const [draft, setDraft] = useState(profile);
+  const { traveler } = useTravelerAuth();
+  const [savedProfile, setSavedProfile] = useState(() =>
+    travelerToForm(traveler ?? {}),
+  );
+  const [draft, setDraft] = useState(() => travelerToForm(traveler ?? {}));
   const [activeSection, setActiveSection] = useState('personal-info');
   const [status, setStatus] = useState('');
+  const [saveError, setSaveError] = useState('');
+  const [saving, setSaving] = useState(false);
   const [photoError, setPhotoError] = useState('');
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [photoProgress, setPhotoProgress] = useState(0);
   const fileInputRef = useRef(null);
 
   const initials =
     `${savedProfile.firstName.trim().charAt(0)}${savedProfile.lastName
       .trim()
-      .charAt(0)}`.toUpperCase() || 'MR';
+      .charAt(0)}`.toUpperCase() || 'PT';
 
   const stats = useMemo(
     () => [
@@ -33,6 +44,7 @@ function SettingsPage() {
   const handleChange = (field, value) => {
     setDraft((current) => ({ ...current, [field]: value }));
     setStatus('');
+    setSaveError('');
   };
 
   const handleNavigate = (item) => {
@@ -46,15 +58,15 @@ function SettingsPage() {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (event) => {
+  const handleFileChange = async (event) => {
     const file = event.target.files?.[0];
 
     if (!file) {
       return;
     }
 
-    if (!['image/jpeg', 'image/png'].includes(file.type)) {
-      setPhotoError('Choose a JPG or PNG image.');
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setPhotoError('Choose a JPG, PNG or WebP image.');
       event.target.value = '';
       return;
     }
@@ -65,35 +77,62 @@ function SettingsPage() {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setDraft((current) => ({ ...current, photo: reader.result }));
-      setPhotoError('');
-      setStatus('');
-    };
-    reader.onerror = () => setPhotoError('Could not read that image.');
-    reader.readAsDataURL(file);
-    event.target.value = '';
+    setPhotoError('');
+    setStatus('');
+    setSaveError('');
+    setPhotoUploading(true);
+    setPhotoProgress(0);
+
+    try {
+      const result = await uploadAvatarImage(file, setPhotoProgress);
+      setDraft((current) => ({ ...current, photo: result.url }));
+    } catch (uploadError) {
+      setPhotoError(
+        uploadError?.message || 'Could not upload that image.',
+      );
+    } finally {
+      setPhotoUploading(false);
+      setPhotoProgress(0);
+      event.target.value = '';
+    }
   };
 
   const handleRemovePhoto = () => {
     setDraft((current) => ({ ...current, photo: null }));
     setPhotoError('');
     setStatus('');
+    setSaveError('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
-  const handleSave = (event) => {
+  const handleSave = async (event) => {
     event.preventDefault();
-    setSavedProfile(draft);
-    setStatus('Changes saved.');
+
+    if (!traveler || saving) {
+      return;
+    }
+
+    setSaving(true);
+    setStatus('');
+    setSaveError('');
+
+    try {
+      await updateTravelerProfile(traveler.uid, draft, traveler);
+      setSavedProfile(draft);
+      setStatus('Changes saved.');
+    } catch {
+      setSaveError('Could not save your profile. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleCancel = () => {
     setDraft(savedProfile);
     setStatus('');
+    setSaveError('');
     setPhotoError('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -126,21 +165,32 @@ function SettingsPage() {
             stats={stats}
           />
 
-          <form className={styles.card} onSubmit={handleSave} noValidate>
-            <SettingsPhotoRow
-              photo={draft.photo}
-              initials={initials}
-              fileInputRef={fileInputRef}
-              onFileChange={handleFileChange}
-              onUploadClick={handleUpload}
-              onRemove={handleRemovePhoto}
-              error={photoError}
-            />
+          <div className={styles.mainColumn}>
+            <form className={styles.card} onSubmit={handleSave} noValidate>
+              <SettingsPhotoRow
+                photo={draft.photo}
+                initials={initials}
+                fileInputRef={fileInputRef}
+                onFileChange={handleFileChange}
+                onUploadClick={handleUpload}
+                onRemove={handleRemovePhoto}
+                error={photoError}
+                uploading={photoUploading}
+                progress={photoProgress}
+              />
 
-            <SettingsProfileForm draft={draft} onChange={handleChange} />
-            <SettingsSecurity />
-            <SettingsActions onCancel={handleCancel} status={status} />
-          </form>
+              <SettingsProfileForm draft={draft} onChange={handleChange} />
+              <SettingsSecurity />
+              <SettingsActions
+                onCancel={handleCancel}
+                status={status}
+                error={saveError}
+                saving={saving}
+              />
+            </form>
+
+            <SettingsOperatorApplication />
+          </div>
         </div>
       </div>
     </main>

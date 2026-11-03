@@ -1,7 +1,14 @@
 import { useState } from 'react';
 import styles from './PackageReviews.module.css';
 
-const filters = ['All', '5 stars', 'Guides', 'Boats'];
+const filters = [
+  'All',
+  '5 stars',
+  '4 stars',
+  '3 stars',
+  '2 stars',
+  '1 star',
+];
 
 function StarIcon() {
   return (
@@ -19,8 +26,58 @@ function StarIcon() {
   );
 }
 
-function PackageReviews({ pkg }) {
+function reviewRating(review) {
+  return Math.max(1, Math.min(5, Number(review.rating) || 5));
+}
+
+function reviewDate(review) {
+  if (review.createdAtDate) {
+    return new Intl.DateTimeFormat('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }).format(review.createdAtDate);
+  }
+
+  return review.date ?? '';
+}
+
+function verdictFor(rating) {
+  if (rating >= 4.5) {
+    return 'Very Good';
+  }
+
+  if (rating >= 3.5) {
+    return 'Good';
+  }
+
+  return 'Fair';
+}
+
+function PackageReviews({ pkg, reviews = null }) {
   const [activeFilter, setActiveFilter] = useState('All');
+  const remoteReviews =
+    Array.isArray(reviews) && reviews.length > 0;
+  const displayReviews = remoteReviews
+    ? reviews
+    : pkg.reviews ?? [];
+  const ratingValue = remoteReviews
+    ? reviews.reduce(
+        (total, review) => total + reviewRating(review),
+        0,
+      ) / reviews.length
+    : Number(pkg.rating) || 0;
+  const reviewCount = remoteReviews
+    ? reviews.length
+    : pkg.reviewCount ?? 0;
+  const visibleReviews =
+    activeFilter === 'All'
+      ? displayReviews
+      : displayReviews.filter(
+          (review) =>
+            Math.round(reviewRating(review)) ===
+            Number(activeFilter.charAt(0)),
+        );
 
   return (
     <section className={styles.section} aria-labelledby="reviews-title">
@@ -31,11 +88,18 @@ function PackageReviews({ pkg }) {
 
         <div className={styles.scoreRow}>
           <StarIcon />
-          <span className={styles.score}>{pkg.rating}</span>
+          <span className={styles.score}>
+            {ratingValue.toFixed(1)}
+          </span>
           <span className={styles.outOf}>/5</span>
           <div className={styles.scoreMeta}>
-            <span className={styles.verdict}>Very Good</span>
-            <span className={styles.count}>{pkg.reviewCount} reviews</span>
+            <span className={styles.verdict}>
+              {verdictFor(ratingValue)}
+            </span>
+            <span className={styles.count}>
+              {reviewCount}{' '}
+              {reviewCount === 1 ? 'review' : 'reviews'}
+            </span>
           </div>
         </div>
 
@@ -56,19 +120,49 @@ function PackageReviews({ pkg }) {
           ))}
         </div>
 
-        <div className={styles.cards}>
-          {pkg.reviews.map((review) => (
-            <article key={review.author} className={styles.card}>
-              <p className={styles.stars} aria-label="5 out of 5 stars">
-                ★★★★★
-              </p>
-              <p className={styles.quote}>{review.quote}</p>
-              <p className={styles.author}>
-                {review.author} · {review.date}
-              </p>
-            </article>
-          ))}
-        </div>
+        {visibleReviews.length > 0 ? (
+          <div className={styles.cards}>
+            {visibleReviews.map((review, index) => {
+              const rating = reviewRating(review);
+              const stars = '★'.repeat(rating);
+              const emptyStars = '☆'.repeat(5 - rating);
+
+              return (
+                <article
+                  key={review.id ?? review.author ?? index}
+                  className={styles.card}
+                >
+                  <p
+                    className={styles.stars}
+                    aria-label={`${rating} out of 5 stars`}
+                  >
+                    {stars}
+                    {emptyStars}
+                  </p>
+                  {review.title && (
+                    <h3 className={styles.reviewTitle}>
+                      {review.title}
+                    </h3>
+                  )}
+                  <p className={styles.quote}>
+                    {review.comment ?? review.quote}
+                  </p>
+                  <p className={styles.author}>
+                    {review.travelerName ?? review.author}
+                    {reviewDate(review)
+                      ? ` · ${reviewDate(review)}`
+                      : ''}
+                  </p>
+                </article>
+              );
+            })}
+          </div>
+        ) : (
+          <p className={styles.empty}>
+            No {activeFilter === 'All' ? '' : activeFilter} reviews
+            yet.
+          </p>
+        )}
       </div>
     </section>
   );

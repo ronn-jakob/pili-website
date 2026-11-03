@@ -18,7 +18,8 @@ export const operatorNav = [
     id: 'bookings',
     label: 'Bookings',
     icon: 'reservations',
-    available: false,
+    to: '/operator/reservations',
+    available: true,
   },
   {
     id: 'operations',
@@ -27,9 +28,17 @@ export const operatorNav = [
     available: false,
   },
   {
+    id: 'feedback',
+    label: 'Customer Feedback',
+    icon: 'reviews',
+    to: '/operator/reviews',
+    available: true,
+  },
+  {
     id: 'performance',
     label: 'Performance',
     icon: 'reports',
-    available: false,
+    to: '/operator/reports',
+    available: true,
   },
 ];

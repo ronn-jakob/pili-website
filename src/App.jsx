@@ -1,6 +1,7 @@
 import { lazy, Suspense, useLayoutEffect } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import SiteLayout from './components/layout/SiteLayout/SiteLayout';
+import RequireTraveler from './components/layout/RequireTraveler/RequireTraveler';
 import Home from './pages/Home/Home';
 import DestinationsPage from './pages/DestinationsPage/DestinationsPage';
 import PackagesPage from './pages/PackagesPage/PackagesPage';
@@ -9,6 +10,10 @@ import BookingPage from './pages/BookingPage/BookingPage';
 import BookingReviewPage from './pages/BookingReviewPage/BookingReviewPage';
 import BookingPaymentPage from './pages/BookingPaymentPage/BookingPaymentPage';
 import BookingsPage from './pages/BookingsPage/BookingsPage';
+import BookingDetailPage from './pages/BookingDetailPage/BookingDetailPage';
+import NotificationsPage from './pages/NotificationsPage/NotificationsPage';
+import NeedsReviewPage from './pages/NeedsReviewPage/NeedsReviewPage';
+import WishlistPage from './pages/WishlistPage/WishlistPage';
 import SettingsPage from './pages/SettingsPage/SettingsPage';
 
 const AdminLayout = lazy(
@@ -29,6 +34,27 @@ const AdminToursPage = lazy(
 const AdminCategoriesPage = lazy(
   () => import('./pages/AdminCategoriesPage/AdminCategoriesPage'),
 );
+const AdminReviewsPage = lazy(
+  () => import('./pages/AdminReviewsPage/AdminReviewsPage'),
+);
+const AdminOperatorsPage = lazy(
+  () => import('./pages/AdminOperatorsPage/AdminOperatorsPage'),
+);
+const AdminUsersPage = lazy(
+  () => import('./pages/AdminUsersPage/AdminUsersPage'),
+);
+const AdminBookingsPage = lazy(
+  () => import('./pages/AdminBookingsPage/AdminBookingsPage'),
+);
+const AdminReportsPage = lazy(
+  () => import('./pages/AdminReportsPage/AdminReportsPage'),
+);
+const AdminRefundsPage = lazy(
+  () => import('./pages/AdminRefundsPage/AdminRefundsPage'),
+);
+const AdminDeparturesPage = lazy(
+  () => import('./pages/AdminDeparturesPage/AdminDeparturesPage'),
+);
 const OperatorLayout = lazy(
   () => import('./components/layout/OperatorLayout/OperatorLayout'),
 );
@@ -40,6 +66,15 @@ const OperatorDashboardPage = lazy(
 );
 const OperatorToursPage = lazy(
   () => import('./pages/OperatorToursPage/OperatorToursPage'),
+);
+const OperatorReservationsPage = lazy(
+  () => import('./pages/OperatorReservationsPage/OperatorReservationsPage'),
+);
+const OperatorReviewsPage = lazy(
+  () => import('./pages/OperatorReviewsPage/OperatorReviewsPage'),
+);
+const OperatorReportsPage = lazy(
+  () => import('./pages/OperatorReportsPage/OperatorReportsPage'),
 );
 const OperatorEditTourPage = lazy(
   () => import('./pages/OperatorEditTourPage/OperatorEditTourPage'),
@@ -78,17 +113,32 @@ function App() {
             <Route path="/destinations" element={<DestinationsPage />} />
             <Route path="/packages" element={<PackagesPage />} />
             <Route path="/packages/:packageId" element={<PackageDetailPage />} />
-            <Route path="/packages/:packageId/book" element={<BookingPage />} />
-            <Route
-              path="/packages/:packageId/book/review"
-              element={<BookingReviewPage />}
-            />
-            <Route
-              path="/packages/:packageId/book/payment"
-              element={<BookingPaymentPage />}
-            />
-            <Route path="/bookings" element={<BookingsPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
+            <Route element={<RequireTraveler />}>
+              <Route
+                path="/packages/:packageId/book"
+                element={<BookingPage />}
+              />
+              <Route
+                path="/packages/:packageId/book/review"
+                element={<BookingReviewPage />}
+              />
+              <Route
+                path="/packages/:packageId/book/payment"
+                element={<BookingPaymentPage />}
+              />
+              <Route path="/bookings" element={<BookingsPage />} />
+              <Route
+                path="/bookings/:bookingId"
+                element={<BookingDetailPage />}
+              />
+              <Route
+                path="/notifications"
+                element={<NotificationsPage />}
+              />
+              <Route path="/reviews" element={<NeedsReviewPage />} />
+              <Route path="/wishlist" element={<WishlistPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+            </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
 
@@ -97,6 +147,14 @@ function App() {
             <Route index element={<AdminDashboardPage />} />
             <Route path="tours" element={<AdminToursPage />} />
             <Route path="categories" element={<AdminCategoriesPage />} />
+            <Route path="reviews" element={<AdminReviewsPage />} />
+            <Route path="operators" element={<AdminOperatorsPage />} />
+            <Route path="users" element={<AdminUsersPage />} />
+            <Route path="bookings" element={<AdminBookingsPage />} />
+            <Route path="refunds" element={<AdminRefundsPage />} />
+            <Route path="departures" element={<AdminDeparturesPage />} />
+            <Route path="reports" element={<AdminReportsPage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
             <Route path="destinations" element={<AdminDestinationsPage />} />
           </Route>
 
@@ -104,6 +162,13 @@ function App() {
           <Route path="/operator" element={<OperatorLayout />}>
             <Route index element={<OperatorDashboardPage />} />
             <Route path="tours" element={<OperatorToursPage />} />
+            <Route
+              path="reservations"
+              element={<OperatorReservationsPage />}
+            />
+            <Route path="reviews" element={<OperatorReviewsPage />} />
+            <Route path="reports" element={<OperatorReportsPage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
             <Route path="tours/new" element={<OperatorEditTourPage key="new" />} />
             <Route
               path="tours/:tourId/edit"

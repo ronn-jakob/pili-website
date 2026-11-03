@@ -9,4 +9,9 @@ export default defineConfig({
       generateScopedName: '[name]__[local]__[hash:base64:6]',
     },
   },
+  server: {
+    proxy: {
+      '/api': 'http://localhost:4242',
+    },
+  },
 })

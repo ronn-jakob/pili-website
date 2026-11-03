@@ -13,7 +13,8 @@ service cloud.firestore {
 
     function isOperator() {
       return isSignedIn()
-        && exists(/databases/$(database)/documents/operators/$(request.auth.uid));
+        && exists(/databases/$(database)/documents/operators/$(request.auth.uid))
+        && get(/databases/$(database)/documents/operators/$(request.auth.uid)).data.status != 'suspended';
     }
 
     function destinationIsActive(destinationId) {
@@ -52,8 +53,119 @@ service cloud.firestore {
     }
 
     match /operators/{userId} {
-      allow read: if isSignedIn() && request.auth.uid == userId;
-      allow write: if false;
+      allow read: if (isSignedIn() && request.auth.uid == userId) || isAdmin();
+      allow create, update: if isAdmin();
+      allow delete: if false;
+    }
+
+    match /operatorApplications/{userId} {
+      allow read: if (isSignedIn() && request.auth.uid == userId) || isAdmin();
+
+      allow create: if isSignedIn()
+        && request.auth.uid == userId
+        && request.resource.data.status == 'pending'
+        && request.resource.data.businessName is string
+        && request.resource.data.businessName.size() > 0
+        && request.resource.data.contactName is string
+        && request.resource.data.contactName.size() > 0
+        && request.resource.data.contactEmail is string
+        && request.resource.data.contactEmail.size() > 0
+        && request.resource.data.contactPhone is string
+        && request.resource.data.contactPhone.size() > 0
+        && request.resource.data.description is string
+        && request.resource.data.description.size() > 0;
+
+      allow update: if isSignedIn()
+        && request.auth.uid == userId
+        && resource.data.status == 'rejected'
+        && request.resource.data.status == 'pending'
+        && request.resource.data.businessName is string
+        && request.resource.data.businessName.size() > 0
+        && request.resource.data.contactName is string
+        && request.resource.data.contactName.size() > 0
+        && request.resource.data.contactEmail is string
+        && request.resource.data.contactEmail.size() > 0
+        && request.resource.data.contactPhone is string
+        && request.resource.data.contactPhone.size() > 0
+        && request.resource.data.description is string
+        && request.resource.data.description.size() > 0
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'businessName',
+          'contactName',
+          'contactEmail',
+          'contactPhone',
+          'description',
+          'status',
+          'submittedAt',
+          'updatedAt',
+          'reviewedBy',
+          'reviewedAt',
+          'rejectionReason'
+        ]);
+
+      allow update: if isAdmin()
+        && request.resource.data.status in ['approved', 'rejected']
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status',
+          'reviewedBy',
+          'reviewedAt',
+          'rejectionReason',
+          'updatedAt'
+        ]);
+
+      allow delete: if false;
+    }
+
+    match /users/{userId} {
+      allow read: if (isSignedIn() && request.auth.uid == userId) || isAdmin();
+
+      allow create: if isSignedIn()
+        && request.auth.uid == userId
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.status == 'active'
+        && request.resource.data.firstName is string
+        && request.resource.data.firstName.size() > 0
+        && request.resource.data.lastName is string
+        && request.resource.data.lastName.size() > 0;
+
+      allow update: if isSignedIn()
+        && request.auth.uid == userId
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.status == resource.data.status
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'firstName',
+          'lastName',
+          'phone',
+          'alternatePhone',
+          'dateOfBirth',
+          'nationality',
+          'gender',
+          'photoURL',
+          'address',
+          'emergencyContact',
+          'preferences',
+          'updatedAt'
+        ]);
+
+      allow update: if isAdmin()
+        && request.resource.data.status in ['active', 'disabled']
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status',
+          'updatedAt'
+        ]);
+
+      match /wishlist/{tourId} {
+        allow read, delete: if isSignedIn()
+          && request.auth.uid == userId;
+        allow create: if isSignedIn()
+          && request.auth.uid == userId
+          && request.resource.data.tourId == tourId
+          && tourIsPublishedAndActive(tourId);
+        allow update: if false;
+      }
+
+      allow delete: if false;
     }
 
     match /destinations/{destinationId} {
@@ -66,6 +178,11 @@ service cloud.firestore {
       allow read: if resource.data.status == 'active' || isAdmin() || isOperator();
       allow create, update: if isAdmin();
       allow delete: if false;
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
     match /tours/{tourId} {
@@ -150,9 +267,244 @@ service cloud.firestore {
         && request.resource.data.lastBookingId == resource.data.lastBookingId
         && request.resource.data.capacity is number
         && request.resource.data.capacity >= resource.data.bookedTravelers
-        && request.resource.data.status in ['scheduled', 'full', 'cancelled'];
+        && request.resource.data.status in ['scheduled', 'full', 'completed', 'cancelled'];
+
+      allow update: if isSignedIn()
+        && resource.data.status in ['scheduled', 'full']
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'bookedTravelers',
+          'lastBookingId',
+          'status',
+          'updatedAt'
+        ])
+        && request.resource.data.bookedTravelers is number
+        && request.resource.data.lastBookingId is string
+        && request.resource.data.lastBookingId != resource.data.lastBookingId
+        && request.resource.data.bookedTravelers == resource.data.bookedTravelers + getAfter(/databases/$(database)/documents/bookings/$(request.resource.data.lastBookingId)).data.travelers.total
+        && getAfter(/databases/$(database)/documents/bookings/$(request.resource.data.lastBookingId)).data.travelerId == request.auth.uid
+        && getAfter(/databases/$(database)/documents/bookings/$(request.resource.data.lastBookingId)).data.departureId == departureId
+        && getAfter(/databases/$(database)/documents/bookings/$(request.resource.data.lastBookingId)).data.status == 'pending'
+        && getAfter(/databases/$(database)/documents/bookings/$(request.resource.data.lastBookingId)).data.paymentStatus == 'unpaid'
+        && request.resource.data.bookedTravelers <= resource.data.capacity
+        && ((request.resource.data.bookedTravelers >= resource.data.capacity
+            && request.resource.data.status == 'full')
+          || (request.resource.data.bookedTravelers < resource.data.capacity
+            && request.resource.data.status == 'scheduled'));
+
+      allow update: if ((isOperator()
+          && resource.data.operatorId == request.auth.uid)
+        || isAdmin())
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'bookedTravelers',
+          'lastBookingId',
+          'status',
+          'updatedAt'
+        ])
+        && request.resource.data.bookedTravelers is number
+        && request.resource.data.bookedTravelers >= 0
+        && request.resource.data.bookedTravelers <= resource.data.capacity
+        && request.resource.data.status in ['scheduled', 'full'];
+
+      allow update: if isAdmin()
+        && request.resource.data.status in ['scheduled', 'full', 'completed', 'cancelled']
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status',
+          'cancellationReason',
+          'updatedAt'
+        ]);
 
       allow delete: if false;
+    }
+
+    match /bookings/{bookingId} {
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.travelerId == request.auth.uid)
+        || (isOperator() && resource.data.operatorId == request.auth.uid);
+
+      allow create: if isSignedIn()
+        && request.resource.data.travelerId == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.paymentStatus == 'unpaid'
+        && request.resource.data.departureId is string
+        && request.resource.data.tourId is string
+        && request.resource.data.travelers.total is number
+        && request.resource.data.travelers.total > 0
+        && request.resource.data.amounts.total is number
+        && request.resource.data.amounts.total >= 0
+        && exists(/databases/$(database)/documents/departures/$(request.resource.data.departureId))
+        && get(/databases/$(database)/documents/departures/$(request.resource.data.departureId)).data.status == 'scheduled'
+        && get(/databases/$(database)/documents/departures/$(request.resource.data.departureId)).data.startAt > request.time
+        && (get(/databases/$(database)/documents/departures/$(request.resource.data.departureId)).data.cutoffAt == null
+          || get(/databases/$(database)/documents/departures/$(request.resource.data.departureId)).data.cutoffAt > request.time)
+        && get(/databases/$(database)/documents/departures/$(request.resource.data.departureId)).data.tourId == request.resource.data.tourId
+        && get(/databases/$(database)/documents/departures/$(request.resource.data.departureId)).data.operatorId == request.resource.data.operatorId
+        && get(/databases/$(database)/documents/departures/$(request.resource.data.departureId)).data.bookedTravelers + request.resource.data.travelers.total <= get(/databases/$(database)/documents/departures/$(request.resource.data.departureId)).data.capacity
+        && get(/databases/$(database)/documents/tours/$(request.resource.data.tourId)).data.status == 'published'
+        && destinationIsActive(get(/databases/$(database)/documents/tours/$(request.resource.data.tourId)).data.destinationId)
+        && getAfter(/databases/$(database)/documents/departures/$(request.resource.data.departureId)).data.bookedTravelers == get(/databases/$(database)/documents/departures/$(request.resource.data.departureId)).data.bookedTravelers + request.resource.data.travelers.total
+        && getAfter(/databases/$(database)/documents/departures/$(request.resource.data.departureId)).data.lastBookingId == bookingId
+        && getAfter(/databases/$(database)/documents/departures/$(request.resource.data.departureId)).data.bookedTravelers <= get(/databases/$(database)/documents/departures/$(request.resource.data.departureId)).data.capacity
+        && getAfter(/databases/$(database)/documents/departures/$(request.resource.data.departureId)).data.status in ['scheduled', 'full'];
+
+      allow update: if ((isOperator()
+          && resource.data.operatorId == request.auth.uid)
+        || isAdmin())
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'departureId',
+          'departureSnapshot',
+          'updatedAt'
+        ]);
+
+      allow update: if ((isOperator()
+          && resource.data.operatorId == request.auth.uid)
+        || isAdmin())
+        && resource.data.status == 'confirmed'
+        && request.resource.data.status == 'completed'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status',
+          'completedAt',
+          'updatedAt'
+        ]);
+
+      allow delete: if false;
+    }
+
+    match /bookingChanges/{changeId} {
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.travelerId == request.auth.uid)
+        || (isOperator() && resource.data.operatorId == request.auth.uid);
+
+      allow create: if isSignedIn()
+        && request.resource.data.travelerId == request.auth.uid
+        && request.resource.data.status == 'requested'
+        && request.resource.data.fromDepartureId is string
+        && request.resource.data.toDepartureId is string
+        && request.resource.data.fromDepartureId != request.resource.data.toDepartureId
+        && exists(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId))
+        && get(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.travelerId == request.auth.uid
+        && get(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.tourId == request.resource.data.tourId
+        && get(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.departureId == request.resource.data.fromDepartureId;
+
+      allow update: if ((isOperator()
+          && resource.data.operatorId == request.auth.uid)
+        || isAdmin())
+        && request.resource.data.status in ['approved', 'rejected']
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status',
+          'resolvedBy',
+          'resolvedAt',
+          'rejectionReason',
+          'updatedAt'
+        ]);
+
+      allow delete: if false;
+    }
+
+    match /cancellationRequests/{bookingId} {
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.travelerId == request.auth.uid);
+
+      allow create: if isSignedIn()
+        && request.resource.data.bookingId == bookingId
+        && request.resource.data.travelerId == request.auth.uid
+        && request.resource.data.status == 'requested'
+        && exists(/databases/$(database)/documents/bookings/$(bookingId))
+        && get(/databases/$(database)/documents/bookings/$(bookingId)).data.travelerId == request.auth.uid
+        && get(/databases/$(database)/documents/bookings/$(bookingId)).data.paymentStatus == 'paid'
+        && get(/databases/$(database)/documents/bookings/$(bookingId)).data.status in ['confirmed', 'completed'];
+
+      allow update: if isAdmin()
+        && request.resource.data.status in ['processed', 'rejected']
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status',
+          'adminNote',
+          'refundAmount',
+          'resolvedBy',
+          'resolvedAt',
+          'updatedAt'
+        ]);
+
+      allow delete: if false;
+    }
+
+    match /payments/{paymentId} {
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.travelerId == request.auth.uid);
+      allow write: if false;
+    }
+
+    match /reviews/{reviewId} {
+      allow read: if resource.data.moderationStatus == 'published'
+        || (isSignedIn() && resource.data.travelerId == request.auth.uid)
+        || isAdmin();
+
+      allow create: if isSignedIn()
+        && reviewId == request.resource.data.bookingId
+        && request.resource.data.travelerId == request.auth.uid
+        && request.resource.data.moderationStatus == 'pending'
+        && request.resource.data.rating in [1, 2, 3, 4, 5]
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.comment is string
+        && request.resource.data.comment.size() > 0
+        && exists(/databases/$(database)/documents/bookings/$(reviewId))
+        && get(/databases/$(database)/documents/bookings/$(reviewId)).data.travelerId == request.auth.uid
+        && get(/databases/$(database)/documents/bookings/$(reviewId)).data.status in ['confirmed', 'completed']
+        && get(/databases/$(database)/documents/bookings/$(reviewId)).data.paymentStatus == 'paid'
+        && (
+          get(/databases/$(database)/documents/bookings/$(reviewId)).data.status == 'completed'
+          || get(/databases/$(database)/documents/bookings/$(reviewId)).data.departureSnapshot.endAt < request.time
+          || (
+            exists(/databases/$(database)/documents/departures/$(get(/databases/$(database)/documents/bookings/$(reviewId)).data.departureId))
+            && get(/databases/$(database)/documents/departures/$(get(/databases/$(database)/documents/bookings/$(reviewId)).data.departureId)).data.status == 'completed'
+          )
+        )
+        && get(/databases/$(database)/documents/bookings/$(reviewId)).data.tourId == request.resource.data.tourId
+        && get(/databases/$(database)/documents/bookings/$(reviewId)).data.operatorId == request.resource.data.operatorId;
+
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'moderationStatus',
+          'moderatedBy',
+          'moderatedAt'
+        ])
+        && request.resource.data.moderationStatus in ['published', 'hidden'];
+
+      allow delete: if false;
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.userId == request.auth.uid);
+
+      allow create: if isAdmin()
+        || (isOperator()
+          && request.resource.data.role == 'traveler'
+          && request.resource.data.type in [
+            'booking_change_approved',
+            'booking_change_rejected',
+            'departure_cancelled'
+          ]
+          && request.resource.data.bookingId is string
+          && exists(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId))
+          && get(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.operatorId == request.auth.uid
+          && get(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.travelerId == request.resource.data.userId);
+
+      allow update: if isSignedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'readAt'
+        ]);
+
+      allow delete: if false;
+    }
+
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin()
+        && request.resource.data.actorId == request.auth.uid
+        && request.resource.data.actorRole == 'admin';
+      allow update, delete: if false;
     }
 
     match /{document=**} {
